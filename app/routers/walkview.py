@@ -33,7 +33,9 @@ def walk_init(w: WalkInit):
         "camera": {"lat": w.lat, "lon": w.lon, "eye_height_m": w.eye_height_m,
                    "heading_deg": w.heading_deg, "fov_deg": w.fov_deg},
         "ground_elevation_m": round(elev, 1),
-        "terrain_relief": {"source": "MOLA-derived terrain patch (Walk View mesh endpoint)",
+        "terrain_relief": {"source": "NAM synthetic terrain patch (Walk View mesh endpoint) [SIM]",
+                           "note": "demo-synthetic-grid + procedural detail; not measured MOLA data. "
+                                   "Production swap to MOLA MEGDR 4 ppd / HiRISE DTMs documented in terrain provenance.",
                            "vertical_exaggeration_available": True},
         "sky": sky,
         "nearest_pov": pov,

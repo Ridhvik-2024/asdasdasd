@@ -49,6 +49,51 @@ def _fbm(seed, ys, xs, octaves=4, gain=0.55):
     return out - 0.5
 
 
+def _detail_noise(lat, lon, seed, octaves=4, gain=0.5, lacunarity=2.0,
+                  cells_equator=360):
+    """Spatially continuous, longitude-periodic value-noise fBm in [-0.5, 0.5].
+
+    Unlike the previous _detail() implementation (which hashed a fresh seed
+    from every coordinate and sampled at a fixed lattice point, producing
+    unrelated values for neighbouring coordinates), this is sampled at the
+    real geographic position so adjacent coordinates blend smoothly.
+
+    Longitude is sampled on a cylindrical lattice that wraps every 360 deg,
+    so the detail field is continuous across the 0/360 seam. Latitude uses a
+    linear (clamped) lattice. The result is deterministic: the same
+    (lat, lon, seed) always yields the same value.
+    """
+    lat = float(lat)
+    lon = float(lon) % 360.0
+    out = 0.0
+    norm = 0.0
+    amp, freq = 1.0, 1.0
+    for o in range(octaves):
+        period = int(cells_equator * freq)  # integer cells spanning 360 deg
+        x = lon / 360.0 * period
+        y = (lat + 90.0) / 180.0 * (cells_equator / 2.0) * freq
+        xi = int(math.floor(x))
+        yi = int(math.floor(y))
+        tx = x - xi
+        ty = y - yi
+        tx = tx * tx * (3 - 2 * tx)
+        ty = ty * ty * (3 - 2 * ty)
+        x0 = xi % period          # wrap longitude lattice (antimeridian seam)
+        x1 = (xi + 1) % period
+        s = int(seed) + o * 2654435761
+        v00 = _hash01(x0, yi, s)
+        v10 = _hash01(x1, yi, s)
+        v01 = _hash01(x0, yi + 1, s)
+        v11 = _hash01(x1, yi + 1, s)
+        a = v00 * (1 - tx) + v10 * tx
+        b = v01 * (1 - tx) + v11 * tx
+        out += amp * (a * (1 - ty) + b * ty)
+        norm += amp
+        amp *= gain
+        freq *= lacunarity
+    return out / norm - 0.5
+
+
 class TerrainEngine:
     def __init__(self):
         self._lock = threading.Lock()
@@ -75,28 +120,48 @@ class TerrainEngine:
 
     # ------------------------------------------------------------- sampling
     def elev(self, lat, lon):
+        """Bilinear elevation, with periodic longitude wrapping at 0/360.
+
+        Longitude is sampled on the periodic 0.5 deg lattice so a point just
+        below 360 deg interpolates against the wrapped first column (0 deg side)
+        instead of extrapolating past the final grid column. Latitude is clamped
+        to the supported range (no pole extrapolation).
+        """
         self.ensure()
         lat, lon = float(lat), float(lon) % 360.0
         LATS, LONS = self._lats, self._lons
-        yi = (np.searchsorted(LATS, lat) - 1)
-        yi = int(np.clip(yi, 0, len(LATS) - 2))
-        lat0, lat1 = LATS[yi], LATS[yi + 1]
-        wy = (lat - lat0) / (lat1 - lat0)
-        xi = int(np.clip(np.searchsorted(LONS, lon) - 1, 0, len(LONS) - 2))
-        lon0, lon1 = LONS[xi], LONS[xi + 1]
-        wx = (lon - lon0) / (lon1 - lon0)
-        row0 = self.grid[yi, xi] * (1 - wx) + self.grid[yi, xi + 1] * wx
-        row1 = self.grid[yi + 1, xi] * (1 - wx) + self.grid[yi + 1, xi + 1] * wx
+        nlat, nlon = len(LATS), len(LONS)
+        # latitude: linear lattice, clamped to valid rows (no extrapolation)
+        dlat = LATS[1] - LATS[0]
+        fy = (lat - LATS[0]) / dlat
+        yi = int(math.floor(fy))
+        yi = max(0, min(yi, nlat - 2))
+        wy = max(0.0, min(1.0, fy - yi))
+        # longitude: periodic lattice. fx wraps into [0, nlon) so the seam
+        # between the last and first column is interpolated, not extrapolated.
+        dlon = LONS[1] - LONS[0]
+        fx = ((lon - LONS[0]) / dlon) % nlon
+        xi = int(math.floor(fx)) % nlon
+        xj = (xi + 1) % nlon
+        wx = fx - math.floor(fx)
+        row0 = self.grid[yi, xi] * (1 - wx) + self.grid[yi, xj] * wx
+        row1 = self.grid[yi + 1, xi] * (1 - wx) + self.grid[yi + 1, xj] * wx
         return float(row0 * (1 - wy) + row1 * wy)
 
     def _detail(self, lat, lon, cell_m, seed_extra=""):
-        """Procedural sub-grid relief, amplitude tied to cell size."""
+        """Procedural sub-grid relief, amplitude tied to cell size.
+
+        Spatially continuous value-noise fBm sampled at the real geographic
+        position (longitude-periodic) so neighbouring coordinates blend
+        smoothly instead of receiving unrelated random values. The previous
+        implementation hashed a fresh seed from every (lat, lon) and evaluated
+        noise at a fixed lattice position, which broke local continuity.
+        """
         amp = min(0.35 * max(cell_m, 1.0), 140.0)
         if amp < 1.0:
             return 0.0
-        seed = zlib.crc32(("%.3f|%.3f|%s" % (lat, lon, seed_extra)).encode())
-        v = _fbm(seed, np.array([77.0]), np.array([133.0]), octaves=3)[0]
-        return float(v * amp)
+        seed = zlib.crc32(("nam-detail|%s" % seed_extra).encode())
+        return float(_detail_noise(lat, lon, seed) * amp)
 
     def elev_full(self, lat, lon, cell_m):
         return self.elev(lat, lon) + self._detail(lat, lon, cell_m)
@@ -120,7 +185,11 @@ class TerrainEngine:
         lat = float(lat)
         yi = int(np.clip(np.searchsorted(self._lats, lat) - 1, 0, len(self._lats) - 2))
         lon = float(lon) % 360.0
-        xi = int(np.clip(np.searchsorted(self._lons, lon) - 1, 0, len(self._lons) - 2))
+        nlon = len(self._lons)
+        dlon = self._lons[1] - self._lons[0]
+        # periodic longitude: pick the cell containing lon, wrapping at 0/360
+        fx = ((lon - self._lons[0]) / dlon) % nlon
+        xi = int(math.floor(fx)) % nlon
         return float(sg[yi, xi])
 
     def slope_full(self, lat, lon, cell_m):
@@ -129,18 +198,37 @@ class TerrainEngine:
         return float(min(85.0, base + math.degrees(math.atan(detail))))
 
     def bbox_stats(self, bbox):
-        """bbox = (min_lat, min_lon, max_lat, max_lon)."""
+        """bbox = (min_lat, min_lon, max_lat, max_lon), longitudes east 0-360.
+
+        Handles antimeridian-crossing boxes: when min_lon > max_lon (after
+        normalisation to 0-360) the region wraps across the 0/360 seam and is
+        taken as the union of [min_lon, 360) and [0, max_lon] rather than the
+        huge swapped span the previous longitude swap produced.
+        """
         self.ensure()
         min_lat, min_lon, max_lat, max_lon = bbox
-        min_lat, max_lat = min(min_lat, max_lat), max(min_lat, max_lat)
-        if min_lon > max_lon:
-            min_lon, max_lon = max_lon, min_lon
-        i0 = int(np.clip(np.searchsorted(self._lats, min_lat), 0, len(self._lats) - 1))
-        i1 = int(np.clip(np.searchsorted(self._lats, max_lat) + 1, 1, len(self._lats)))
-        j0 = int(np.clip(np.searchsorted(self._lons, min_lon), 0, len(self._lons) - 1))
-        j1 = int(np.clip(np.searchsorted(self._lons, max_lon) + 1, 1, len(self._lons)))
-        sub = self.grid[i0:i1, j0:j1]
-        sub_s = self.slope_grid()[i0:i1, j0:j1]
+        min_lat, max_lat = float(min(min_lat, max_lat)), float(max(min_lat, max_lat))
+        min_lon = float(min_lon) % 360.0
+        max_lon = float(max_lon) % 360.0
+        LATS, LONS = self._lats, self._lons
+        nlon = len(LONS)
+        crosses = min_lon > max_lon
+        i0 = int(np.clip(np.searchsorted(LATS, min_lat), 0, len(LATS) - 1))
+        i1 = int(np.clip(np.searchsorted(LATS, max_lat) + 1, 1, len(LATS)))
+        if not crosses:
+            j0 = int(np.clip(np.searchsorted(LONS, min_lon), 0, nlon - 1))
+            j1 = int(np.clip(np.searchsorted(LONS, max_lon) + 1, 1, nlon))
+            sub = self.grid[i0:i1, j0:j1]
+            sub_s = self.slope_grid()[i0:i1, j0:j1]
+        else:
+            # union of [min_lon, 360) and [0, max_lon] across the seam
+            ja = int(np.clip(np.searchsorted(LONS, min_lon), 0, nlon - 1))
+            jb = int(np.clip(np.searchsorted(LONS, max_lon) + 1, 1, nlon))
+            sub = np.concatenate(
+                [self.grid[i0:i1, ja:], self.grid[i0:i1, :jb]], axis=1)
+            sub_s = np.concatenate(
+                [self.slope_grid()[i0:i1, ja:], self.slope_grid()[i0:i1, :jb]],
+                axis=1)
         if sub.size == 0:
             sub = np.array([[self.grid[int(np.argmin(abs(self._lats - min_lat))), 0]]])
             sub_s = np.array([[self.slope(min_lat, min_lon)]])
@@ -148,6 +236,7 @@ class TerrainEngine:
         hazard = min(100.0, mean_slope * 9.0 + max_slope * 1.2)
         return {
             "bbox": [float(min_lat), float(min_lon), float(max_lat), float(max_lon)],
+            "crosses_antimeridian": bool(crosses),
             "mean_elev_m": float(sub.mean()), "min_elev_m": float(sub.min()),
             "max_elev_m": float(sub.max()), "relief_m": float(sub.max() - sub.min()),
             "mean_slope_deg": mean_slope, "max_slope_deg": max_slope,

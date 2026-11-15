@@ -62,11 +62,22 @@ def dest_pt(lat, lon, dist_km, az_deg):
 
 
 def poly_area_km2(points):
-    """Spherical polygon area (km2) via the shoelace formula on a sphere."""
+    """Spherical polygon area (km2) via the shoelace formula on a sphere.
+
+    Longitudes are unwrapped so each consecutive edge uses the short angular
+    difference. Without this, a polygon crossing 359 deg to 1 deg would be
+    treated as spanning 358 deg instead of 2 deg, inflating the area by orders
+    of magnitude.
+    """
     if len(points) < 3:
         return 0.0
     lats = [norm_lat(p["lat"] if isinstance(p, dict) else p[0]) for p in points]
-    lons = [norm_lon(p["lon"] if isinstance(p, dict) else p[1]) for p in points]
+    raw = [norm_lon(p["lon"] if isinstance(p, dict) else p[1]) for p in points]
+    # unwrap: each step takes the shortest signed delta in (-180, 180]
+    lons = [raw[0]]
+    for i in range(1, len(raw)):
+        d = ((raw[i] - raw[i - 1] + 180.0) % 360.0) - 180.0
+        lons.append(lons[-1] + d)
     phi = [math.radians(x) for x in lats]
     lam = [math.radians(x) for x in lons]
     total = 0.0

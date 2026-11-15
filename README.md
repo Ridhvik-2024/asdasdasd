@@ -12,7 +12,7 @@ closing at a verified release gate:
 | 4 | `v2.2.1-backend-missions` — Missions + environment | A* routing (3 presets), mission suite (route/area/evacuation/survey, KML, optimize, compare), radiation + SEP/dust storms (MY34), storm-response planner, water/shelter discovery | `tests/test_phase4_gate.py` |
 | 5 | `v2.2.2-backend-live` — Real-time + closing | nodes (8 types), presence simulation, WebSocket channels (`/ws/events`, `/ws/presence`) with bounded rates, storm drill, integrity audit | `tests/test_phase5_gate.py` |
 
-Current status: **48/48 gate tests passing** (`python -m pytest tests/ -q`).
+Current status: **86/86 tests passing** — 48 phase-gate tests + 38 merged submission tests across routing/missions, spatial/terrain, and JEV AI (`python -m pytest tests/ -q`), plus **26/26 self-test checks** (`python scripts/selftest.py`).
 
 ---
 
@@ -65,7 +65,7 @@ app/
 data/seeds/             curated JSON seeds + 0.5-deg demo DEM (npz)
 data/usgs_gazetteer_full.json   2,055 IAU-approved features (official KMZ)
 scripts/                seed/DEM generators, gazetteer connector, selftest
-tests/                  the five phase-gate suites
+tests/                  five phase-gate suites + routing, spatial & JEV submission suites
 ```
 
 ## The 24 JEV tools
