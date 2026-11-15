@@ -147,7 +147,7 @@ def storm_response(origin_lat, origin_lon, destination=None, severity="M"):
             continue
         leg = routing.plan_route(a["lat"], a["lon"], b["lat"], b["lon"], preset="speed")
         legs.append(leg)
-        if leg.get("stats"):
+        if leg.get("stats") and leg["stats"].get("length_km") is not None:
             total += leg["stats"]["length_km"]
     rad = radiation(origin_lat, origin_lon, duration_sols=2.0, shielding="suit",
                     storm={"kind": "sep", "severity": severity})

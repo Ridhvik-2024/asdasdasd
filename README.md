@@ -11,8 +11,9 @@ closing at a verified release gate:
 | 3 | `v2.2.0-backend-ai` — JEV intelligent explorer | 24 typed tools, deterministic intent router, OpenAI-compatible LLM adapter (llama.cpp), retrieval, SSE chat with tool trace, explain-view, benchmark | `tests/test_phase3_gate.py` |
 | 4 | `v2.2.1-backend-missions` — Missions + environment | A* routing (3 presets), mission suite (route/area/evacuation/survey, KML, optimize, compare), radiation + SEP/dust storms (MY34), storm-response planner, water/shelter discovery | `tests/test_phase4_gate.py` |
 | 5 | `v2.2.2-backend-live` — Real-time + closing | nodes (8 types), presence simulation, WebSocket channels (`/ws/events`, `/ws/presence`) with bounded rates, storm drill, integrity audit | `tests/test_phase5_gate.py` |
+| 6 | `v2.3.0-backend` — Hardened scientific & technical release | Mars24 solar geometry, spherical geodesy, polar/seam-safe terrain & aspect/curvature, admissible A* + 2-opt missions, XML-safe KML + GeoJSON/CSV, strict JEV/LLM schema validation, persistent tile cache, WS replay, optional API-key auth | `tests/test_technical_review_fixes.py` |
 
-Current status: **86/86 tests passing** — 48 phase-gate tests + 38 merged submission tests across routing/missions, spatial/terrain, and JEV AI (`python -m pytest tests/ -q`), plus **26/26 self-test checks** (`python scripts/selftest.py`).
+Current status: **102/102 tests passing** — 48 phase-gate tests + 38 merged submission tests + 16 technical-review & v2.3 roadmap regression tests (`python -m pytest tests/ -q`), plus **26/26 self-test checks** (`python scripts/selftest.py`).
 
 ---
 
@@ -115,24 +116,25 @@ local model behind the identical SSE protocol.
 ## Configuration
 
 See `.env.example`: `NAM_PORT, NAM_DATA_DIR, NAM_DB_PATH, NAM_ALLOW_UPSTREAM,
-NAM_TILE_TTL_HOURS, NAM_CTX_TILE_TEMPLATE, NAM_LLM_BASE_URL, NAM_LLM_MODEL`.
+NAM_TILE_TTL_HOURS, NAM_CTX_TILE_TEMPLATE, NAM_LLM_BASE_URL, NAM_LLM_MODEL,
+NAM_API_KEY, NAM_CORS_ORIGINS`.
 
-## Endpoint tour (≈95 routes)
+## Endpoint tour (87 OpenAPI paths)
 
 - **Core geo**: `/search`, `/locations/{id}`, `/landing_sites`, `/bookmarks`,
   `/share`, `/elevation`, `/elevation/profile`, `/terrain/{patch,mesh,slope,hazard}`,
-  `/imagery/ladder`, `/tiles/{layer}/{z}/{x}/{y}`, `/connectors/status`,
+  `/imagery/ladder`, `/tiles/{layer}/{z}/{x}/{y}`, `/tiles/cache/invalidate`, `/connectors/status`,
   `/measure/{distance,path_distance,route_distance,profile,crater,area,slope,
   elevation_difference,solar,terrain_download,stl}`
 - **Science & experience**: `/layers`, `/layers/compare`, `/discoveries`,
   `/sites`, `/sites/compare`, `/panoramas…`, `/traverses…`,
   `/imagery/linkage`, `/sites/{rover}/timeline`, `/walkview/{init,patch,pov,imagery}`
 - **JEV**: `/jev/tools`, `/jev/chat` (SSE), `/jev/explain`, `/jev/benchmark`, `/jev/logs`
-- **Operations**: `/missions…` (CRUD, route, optimize, kml, compare),
+- **Operations**: `/missions…` (CRUD, route, optimize, kml, geojson, csv, compare),
   `/environment/{radiation,storms,storms/simulate,storm_response}`,
   `/water`, `/shelters`
-- **Realtime**: `/nodes…`, `/presence…`, `/events/trigger`,
-  `WS /ws/events`, `WS /ws/presence`
+- **Realtime**: `/nodes…`, `/presence…`, `/events/trigger`, `/events/history`,
+  `WS /ws/events?since_id=`, `WS /ws/presence`
 
 ## The gate demo (backend equivalent)
 

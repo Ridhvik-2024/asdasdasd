@@ -1,9 +1,6 @@
-"""Imagery ladder registry, tile proxy with cache, connector status.
-
-External imagery is reached ONLY through this proxy: cache, attribute,
-degrade honestly. The client never calls upstream tile servers directly.
-"""
-import struct
+"""Imagery ladder registry, tile proxy with persistent cache, WMS/XYZ adapters,
+magic-byte content verification, and connector status."""
+import json
 
 from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel
@@ -34,6 +31,38 @@ LADDER = [
      "use": "interactive geology", "attribution": "USGS (Tanaka et al. 2014)"},
 ]
 
+# Known USGS Astrogeology WMS layer identifiers corresponding to NAM ladder IDs
+WMS_LAYER_MAP = {
+    "mdim21": "MARS_viking_mdim21_ClrMosaic_global_232m",
+    "themis-day": "MARS_themis_dayir_mosaic_global_100m",
+    "themis-night": "MARS_themis_nightir_mosaic_global_100m",
+    "mola-color": "MARS_mola_colorized_shaded_relief_global_463m",
+    "mola-shaded": "MARS_mola_shaded_relief_global_463m",
+    "sim3292-geology": "MARS_sim3292_geology",
+}
+
+
+def _validate_tile_xyz(z: int, x: int, y: int):
+    """Validate tile zoom and slippy/equirectangular (x, y) indices."""
+    if z < 0 or z > 24:
+        raise HTTPException(400, "zoom level z must be in [0, 24]")
+    # Allow both 1:1 Web-Mercator (2^z x 2^z) and 2:1 equirectangular CRS:84 (2^(z+1) x 2^z)
+    max_x = 1 << (z + 1)
+    max_y = 1 << z
+    if x < 0 or x >= max_x or y < 0 or y >= max_y:
+        raise HTTPException(400, "tile coordinates (x=%d, y=%d) out of range for z=%d" % (x, y, z))
+
+
+def _xyz_to_crs84_bbox(z: int, x: int, y: int) -> str:
+    """Convert equirectangular/global tile (z, x, y) into CRS:84 BBOX (min_lon,min_lat,max_lon,max_lat)."""
+    nx = max(1, 1 << z)
+    ny = max(1, 1 << z)
+    lon0 = (x / nx) * 360.0 - 180.0
+    lon1 = ((x + 1) / nx) * 360.0 - 180.0
+    lat1 = 90.0 - (y / ny) * 180.0
+    lat0 = 90.0 - ((y + 1) / ny) * 180.0
+    return "%.6f,%.6f,%.6f,%.6f" % (lon0, lat0, lon1, lat1)
+
 
 @router.get("/imagery/ladder")
 def imagery_ladder():
@@ -46,47 +75,70 @@ def imagery_ladder():
 
 @router.get("/tiles/{layer}/{z}/{x}/{y}")
 def tile(layer: str, z: int, x: int, y: int):
+    _validate_tile_xyz(z, x, y)
     c = connectors.get("ctx-murray") if layer.startswith("ctx") else connectors.get(layer)
+    wms_layer = WMS_LAYER_MAP.get(layer)
+    if not c and wms_layer:
+        c = connectors.get("usgs-wms")
     if not c:
-        # transparent passthrough for USGS-hosted layers by name
         c = connectors.get("usgs-wms")
     if not c:
         raise HTTPException(404, "unknown layer")
+
     if not config.ALLOW_UPSTREAM:
         body = degraded("tile:" + layer, "NAM_ALLOW_UPSTREAM=0 (offline mode)",
                         c["url"] + " (access path; cache hit expected in production)")
         body["attribution"] = c["attribution"]
-        return Response(content=__import__("json").dumps(body), media_type="application/json", status_code=503)
+        return Response(content=json.dumps(body), media_type="application/json", status_code=503)
+
     template = c.get("template")
-    if not template or "{z}" not in template:
+    if template and "{z}" in template:
+        url = template.format(z=z, x=x, y=y)
+    elif template and "{bbox}" in template and wms_layer:
+        url = template.format(layer=wms_layer, bbox=_xyz_to_crs84_bbox(z, x, y), w=256, h=256)
+    else:
         body = degraded("tile:" + layer,
                         "tile URL template not yet verified for this layer (connector-time verification pending)",
                         c["url"])
         body["attribution"] = c["attribution"]
-        return Response(content=__import__("json").dumps(body), media_type="application/json", status_code=503)
-    url = template.format(z=z, x=x, y=y)
+        return Response(content=json.dumps(body), media_type="application/json", status_code=503)
+
     try:
         data, cached = connectors.fetch_bytes(url)
     except Exception as e:
-        _stats = connectors._stats
-        _stats["errors"] += 1
+        connectors._stats["errors"] += 1
         body = degraded("tile:" + layer,
                         "upstream fetch failed: %s" % type(e).__name__,
                         c["url"] + " - documented access path; not faked")
         body["attribution"] = c["attribution"]
-        return Response(content=__import__("json").dumps(body), media_type="application/json", status_code=503)
+        return Response(content=json.dumps(body), media_type="application/json", status_code=503)
+
+    media = connectors.detect_image_media_type(data)
+    if not media:
+        connectors._stats["errors"] += 1
+        body = degraded("tile:" + layer,
+                        "upstream payload failed image magic-byte validation",
+                        c["url"] + " - documented access path; non-image response rejected")
+        body["attribution"] = c["attribution"]
+        return Response(content=json.dumps(body), media_type="application/json", status_code=503)
+
     headers = {
         "X-NAM-Cache": "hit" if cached else "miss",
         "X-NAM-Attribution": c["attribution"],
         "Cache-Control": "public, max-age=86400",
     }
-    media = "image/jpeg" if url.endswith((".jpg", ".jpeg")) else "image/png"
     return Response(content=data, media_type=media, headers=headers)
 
 
 @router.get("/tiles/stats")
 def tile_stats():
     return {"stats": connectors._stats, "provenance": prov(source="tile proxy counters")}
+
+
+@router.post("/tiles/cache/invalidate")
+def invalidate_tile_cache(url: str = None):
+    connectors.invalidate_cache(url)
+    return {"invalidated": url or "all", "stats": connectors._stats}
 
 
 @router.get("/connectors/status")
@@ -115,7 +167,3 @@ def activate_layer(l: LayerActivate):
     return {"activated": lay["id"], "layer": lay,
             "provenance": prov(source=lay["source"], url=lay.get("url"),
                                attribution=lay.get("attribution"))}
-
-
-def _unused(x=struct):  # keep import referenced for extension
-    return x

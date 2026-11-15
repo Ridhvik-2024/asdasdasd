@@ -1,32 +1,57 @@
 """Mission planning suite: route/area/evacuation/survey with ordered stops,
-KML export, optimization and comparison. All generated plans are advisory."""
+KML/GeoJSON/CSV export, optimization and comparison. All generated plans are advisory."""
+import csv
+import io
 import uuid
+from xml.sax.saxutils import escape as _xml_escape
 
 from . import db, routing
 from .integrity import SIM
+from .mars import hav_km, validate_coords
+
+MISSION_TYPES = ("route", "area", "evacuation", "survey")
+_XML_ENTITIES = {'"': "&quot;", "'": "&apos;"}
+
+
+def _esc(val):
+    return _xml_escape("" if val is None else str(val), _XML_ENTITIES)
 
 
 def create(mtype, name, objective=None, stops=None):
-    mid = "mission-" + uuid.uuid4().hex[:8]
-    if mtype not in ("route", "area", "evacuation", "survey"):
+    if mtype not in MISSION_TYPES:
         raise ValueError("type must be one of route|area|evacuation|survey")
-    db.ex("INSERT INTO missions (id,type,name,objective,advisory) VALUES (?,?,?,?,1)",
-          (mid, mtype, name, objective or ""))
-    for i, s in enumerate(stops or []):
-        add_stop(mid, s["lat"], s["lon"], s.get("activity", "observe"),
-                 s.get("reason", ""), ord_=i + 1)
+    if not str(name or "").strip():
+        raise ValueError("mission name must be non-empty")
+    validated_stops = []
+    for s in (stops or []):
+        lat, lon = validate_coords(s["lat"], s["lon"])
+        validated_stops.append({
+            "lat": lat,
+            "lon": lon,
+            "activity": s.get("activity", "observe"),
+            "reason": s.get("reason", ""),
+        })
+    mid = "mission-" + uuid.uuid4().hex[:8]
+    with db.tx():
+        db.ex("INSERT INTO missions (id,type,name,objective,advisory) VALUES (?,?,?,?,1)",
+              (mid, mtype, str(name).strip(), objective or ""))
+        for i, s in enumerate(validated_stops):
+            db.ex("INSERT INTO mission_stops (mission_id,ord,lat,lon,activity,reason) VALUES (?,?,?,?,?,?)",
+                  (mid, i + 1, s["lat"], s["lon"], s["activity"], s["reason"]))
     return get(mid)
 
 
 def add_stop(mid, lat, lon, activity="observe", reason="", ord_=None):
-    m = get(mid)
-    if not m:
-        return None
-    if ord_ is None:
-        rows = db.q("SELECT COALESCE(MAX(ord),0)+1 AS nxt FROM mission_stops WHERE mission_id=?", (mid,))
-        ord_ = rows[0]["nxt"]
-    db.ex("INSERT INTO mission_stops (mission_id,ord,lat,lon,activity,reason) VALUES (?,?,?,?,?,?)",
-          (mid, ord_, lat, lon, activity, reason))
+    lat, lon = validate_coords(lat, lon)
+    with db.tx():
+        rows = db.q("SELECT id FROM missions WHERE id=?", (mid,))
+        if not rows:
+            return None
+        if ord_ is None:
+            nxt = db.q("SELECT COALESCE(MAX(ord),0)+1 AS nxt FROM mission_stops WHERE mission_id=?", (mid,))
+            ord_ = nxt[0]["nxt"]
+        db.ex("INSERT INTO mission_stops (mission_id,ord,lat,lon,activity,reason) VALUES (?,?,?,?,?,?)",
+              (mid, int(ord_), lat, lon, activity, reason))
     return get(mid)
 
 
@@ -39,8 +64,8 @@ def get(mid):
     if not rows:
         return None
     m = rows[0]
-    stops = db.q("SELECT * FROM mission_stops WHERE mission_id=? ORDER BY ord", (mid,))
-    routes = db.q("SELECT id,preset,length_km,stats_json,created FROM routes WHERE mission_id=?", (mid,))
+    stops = db.q("SELECT * FROM mission_stops WHERE mission_id=? ORDER BY ord, id", (mid,))
+    routes = db.q("SELECT id,preset,length_km,stats_json,created FROM routes WHERE mission_id=? ORDER BY rowid", (mid,))
     return {
         "id": m["id"], "type": m["type"], "name": m["name"], "objective": m["objective"],
         "status": m["status"], "notes": m["notes"],
@@ -61,11 +86,10 @@ def list_missions():
 
 def attach_route(mid, route, preset="balanced"):
     rid = "route-" + uuid.uuid4().hex[:8]
-    # Successful routes carry stats.length_km; degraded routes carry a top-level
-    # length_km of None and a "status": "degraded" marker. Normalise both shapes
-    # so the persisted row is consistent.
     if route.get("status") == "degraded":
+        base_stats = route.get("stats") or {}
         stats = {
+            **base_stats,
             "length_km": None,
             "status": "degraded",
             "degraded": True,
@@ -75,9 +99,10 @@ def attach_route(mid, route, preset="balanced"):
     else:
         stats = route.get("stats") or {}
         length_km = stats.get("length_km")
-    db.ex("INSERT INTO routes (id,mission_id,preset,length_km,stats_json,path_json) VALUES (?,?,?,?,?,?)",
-          (rid, mid, preset, length_km, db.j(stats), db.j(route.get("path", []))))
-    db.ex("UPDATE missions SET status='planned' WHERE id=?", (mid,))
+    with db.tx():
+        db.ex("INSERT INTO routes (id,mission_id,preset,length_km,stats_json,path_json) VALUES (?,?,?,?,?,?)",
+              (rid, mid, preset, length_km, db.j(stats), db.j(route.get("path", []))))
+        db.ex("UPDATE missions SET status='planned' WHERE id=?", (mid,))
     return rid
 
 
@@ -90,8 +115,35 @@ def route_for(mid, lat1, lon1, lat2, lon2, preset="balanced"):
     return {"route_id": rid, **route}
 
 
+def _two_opt_open_path(order):
+    """Improve an open-path tour (anchored at order[0]) via 2-opt segment reversals."""
+    n = len(order)
+    if n < 4:
+        return order
+
+    def _path_len(seq):
+        return sum(
+            hav_km(seq[k]["lat"], seq[k]["lon"], seq[k + 1]["lat"], seq[k + 1]["lon"])
+            for k in range(len(seq) - 1)
+        )
+
+    best = list(order)
+    best_d = _path_len(best)
+    improved = True
+    while improved:
+        improved = False
+        for i in range(1, n - 1):
+            for j in range(i + 1, n):
+                cand = best[:i] + list(reversed(best[i:j + 1])) + best[j + 1:]
+                d = _path_len(cand)
+                if d + 1e-6 < best_d:
+                    best, best_d = cand, d
+                    improved = True
+    return best
+
+
 def optimize(mid, preset="balanced"):
-    """Nearest-neighbor ordering of stops over A* leg lengths.
+    """Nearest-neighbor + 2-opt tour ordering of stops over A* leg lengths.
 
     A leg may come back degraded (no in-grid route found). Degraded legs are
     recorded honestly with ``length_km`` and ``est_sols`` set to None; they
@@ -109,21 +161,21 @@ def optimize(mid, preset="balanced"):
         cur = order[-1]
         best, bd = None, None
         for s in remaining:
-            from .mars import hav_km
             d = hav_km(cur["lat"], cur["lon"], s["lat"], s["lon"])
             if bd is None or d < bd:
                 best, bd = s, d
         order.append(best)
         remaining.remove(best)
+    order = _two_opt_open_path(order)
+
     length = 0.0
     legs = []
     degraded_legs = 0
     for i in range(len(order) - 1):
         a, b = order[i], order[i + 1]
         leg = routing.plan_route(a["lat"], a["lon"], b["lat"], b["lon"], preset)
-        if leg.get("status") == "degraded":
-            # Degraded leg: no measured length, no slope stats, no traversal
-            # time. Record it honestly and never report a length for it.
+        leg_stats = leg.get("stats") or {}
+        if leg.get("status") == "degraded" or leg_stats.get("length_km") is None:
             degraded_legs += 1
             legs.append({
                 "from": [a["lat"], a["lon"]],
@@ -134,23 +186,16 @@ def optimize(mid, preset="balanced"):
                 "note": leg.get("note", "degraded fallback"),
             })
             continue
-        leg_stats = leg.get("stats") or {}
         leg_len = leg_stats.get("length_km")
-        if leg_len is not None:
-            length += leg_len
+        length += leg_len
         legs.append({
             "from": [a["lat"], a["lon"]],
             "to": [b["lat"], b["lon"]],
             "length_km": leg_len,
             "est_sols": leg_stats.get("est_traverse_sols"),
         })
-    db.ex("DELETE FROM mission_stops WHERE mission_id=?", (mid,))
-    for i, s in enumerate(order):
-        db.ex("INSERT INTO mission_stops (mission_id,ord,lat,lon,activity,reason) VALUES (?,?,?,?,?,?)",
-              (mid, i + 1, s["lat"], s["lon"], s["activity"], s["reason"]))
+
     rid = "route-" + uuid.uuid4().hex[:8]
-    # If every leg degraded, there is no measured route at all: report None
-    # rather than a misleading 0 km "plan".
     total_length = round(length, 2) if degraded_legs < len(legs) else None
     stats = {
         "length_km": total_length,
@@ -160,12 +205,18 @@ def optimize(mid, preset="balanced"):
         "degraded_legs": degraded_legs,
         "total_legs": len(legs),
     }
-    db.ex("INSERT INTO routes (id,mission_id,preset,length_km,stats_json,path_json) VALUES (?,?,?,?,?,?)",
-          (rid, mid, preset, total_length, db.j(stats), db.j(order)))
+    with db.tx():
+        db.ex("DELETE FROM mission_stops WHERE mission_id=?", (mid,))
+        for i, s in enumerate(order):
+            db.ex("INSERT INTO mission_stops (mission_id,ord,lat,lon,activity,reason) VALUES (?,?,?,?,?,?)",
+                  (mid, i + 1, s["lat"], s["lon"], s["activity"], s["reason"]))
+        db.ex("INSERT INTO routes (id,mission_id,preset,length_km,stats_json,path_json) VALUES (?,?,?,?,?,?)",
+              (rid, mid, preset, total_length, db.j(stats), db.j(order)))
     return get(mid)
 
 
 def kml(mid):
+    """Export mission as valid XML/KML 2.2 with escaped user strings."""
     m = get(mid)
     if not m:
         return None
@@ -173,7 +224,7 @@ def kml(mid):
     T = terrain.engine().ensure()
     coords = []
     if m["routes"]:
-        path = db.uj(db.q("SELECT path_json FROM routes WHERE mission_id=? ORDER BY created DESC LIMIT 1",
+        path = db.uj(db.q("SELECT path_json FROM routes WHERE mission_id=? ORDER BY rowid DESC LIMIT 1",
                           (mid,))[0]["path_json"], [])
         for p in path:
             coords.append("%.5f,%.5f,%.0f" % (p["lon"], p["lat"], p.get("elev_m", 0)))
@@ -185,8 +236,10 @@ def kml(mid):
         placemarks.append(
             "    <Placemark><name>%d. %s</name><description>%s</description>"
             "<Point><coordinates>%.5f,%.5f</coordinates></Point></Placemark>"
-            % (s["ord"], s["activity"], s["reason"] or "advisory stop [SIM]",
+            % (s["ord"], _esc(s["activity"]), _esc(s["reason"] or "advisory stop [SIM]"),
                s["lon"], s["lat"]))
+    safe_name = _esc(m["name"])
+    safe_obj = _esc(m.get("objective") or "")
     kml_doc = """<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2"><Document>
   <name>%s</name>
@@ -195,9 +248,56 @@ def kml(mid):
     %s
   </coordinates></LineString></Placemark>
 %s
-</Document></kml>""" % (m["name"], m.get("objective") or "", m["name"],
+</Document></kml>""" % (safe_name, safe_obj, safe_name,
                         "\n    ".join(coords), "\n".join(placemarks))
     return kml_doc
+
+
+def geojson(mid):
+    """Export mission stops and latest route path as a GeoJSON FeatureCollection."""
+    m = get(mid)
+    if not m:
+        return None
+    features = []
+    for s in m["stops"]:
+        features.append({
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [s["lon"], s["lat"]]},
+            "properties": {"ord": s["ord"], "activity": s["activity"], "reason": s["reason"]},
+        })
+    if m["routes"]:
+        path = db.uj(db.q("SELECT path_json FROM routes WHERE mission_id=? ORDER BY rowid DESC LIMIT 1",
+                          (mid,))[0]["path_json"], [])
+        if len(path) >= 2:
+            features.append({
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [[p["lon"], p["lat"]] + ([p["elev_m"]] if "elev_m" in p else []) for p in path],
+                },
+                "properties": {"mission_id": m["id"], "route_id": m["routes"][-1]["id"],
+                               "stats": m["routes"][-1]["stats"]},
+            })
+    return {
+        "type": "FeatureCollection",
+        "properties": {"id": m["id"], "name": m["name"], "type": m["type"],
+                       "objective": m["objective"], "advisory": True,
+                       "crs": "IAU:49900 (Mars east 0-360) [SIM]"},
+        "features": features,
+    }
+
+
+def csv_stops(mid):
+    """Export ordered mission stops as CSV."""
+    m = get(mid)
+    if not m:
+        return None
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["ord", "lat", "lon", "activity", "reason"])
+    for s in m["stops"]:
+        writer.writerow([s["ord"], s["lat"], s["lon"], s["activity"], s["reason"]])
+    return buf.getvalue()
 
 
 def compare(mid_a, mid_b):
@@ -205,19 +305,24 @@ def compare(mid_a, mid_b):
     if not a or not b:
         return None
     def stats(m):
-        r = m["routes"][0] if m["routes"] else None
+        r = m["routes"][-1] if m["routes"] else None
+        st = (r or {}).get("stats") or {}
         return {"stops": len(m["stops"]), "length_km": (r or {}).get("length_km"),
-                "est_sols": ((r or {}).get("stats") or {}).get("est_traverse_sols"),
+                "est_sols": st.get("est_traverse_sols"),
+                "mean_slope_deg": st.get("mean_slope_deg"),
+                "max_slope_deg": st.get("max_slope_deg"),
+                "degraded_legs": st.get("degraded_legs"),
                 "type": m["type"]}
     return {"a": {"id": a["id"], **stats(a)}, "b": {"id": b["id"], **stats(b)},
             "provenance": {"source": "NAM mission comparison [SIM]"}}
 
 
 def delete(mid):
-    db.ex("DELETE FROM mission_stops WHERE mission_id=?", (mid,))
-    db.ex("DELETE FROM routes WHERE mission_id=?", (mid,))
-    db.ex("DELETE FROM missions WHERE id=?", (mid,))
-    return True
+    with db.tx():
+        db.ex("DELETE FROM mission_stops WHERE mission_id=?", (mid,))
+        db.ex("DELETE FROM routes WHERE mission_id=?", (mid,))
+        deleted = db.ex_count("DELETE FROM missions WHERE id=?", (mid,))
+    return deleted > 0
 
 
 def annotate(mid, note):

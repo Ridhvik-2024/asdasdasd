@@ -8,12 +8,23 @@
 - Coordinates: latitude degrees (south negative), longitude EAST 0-360.
 """
 SIM = "[SIM]"
+QUALITY_TIERS = ("observed", "derived", "simulated", "predicted")
 
 
-def prov(source, mission=None, instrument=None, resolution=None, date=None, url=None, note=None):
-    """Build a provenance block. All fields except source are optional."""
-    return {
+def prov(source, mission=None, instrument=None, resolution=None, date=None,
+         url=None, note=None, quality=None, attribution=None):
+    """Build a provenance block with standardized data-quality tier metadata."""
+    if quality not in QUALITY_TIERS:
+        src_low = (source or "").lower()
+        if "[sim]" in src_low or "synthetic" in src_low or "simulated" in src_low:
+            quality = "simulated"
+        elif "derived" in src_low or "scaling" in src_low or "comparison" in src_low:
+            quality = "derived"
+        else:
+            quality = "observed"
+    out = {
         "source": source,
+        "quality": quality,
         "mission": mission,
         "instrument": instrument,
         "resolution": resolution,
@@ -21,6 +32,9 @@ def prov(source, mission=None, instrument=None, resolution=None, date=None, url=
         "url": url,
         "note": note,
     }
+    if attribution is not None:
+        out["attribution"] = attribution
+    return out
 
 
 def with_sim(payload, note=None):

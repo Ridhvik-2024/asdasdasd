@@ -1,4 +1,4 @@
-"""Mission suite endpoints (route/area/evacuation/survey, KML, optimize)."""
+"""Mission suite endpoints (route/area/evacuation/survey, KML/GeoJSON/CSV, optimize)."""
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel
@@ -19,13 +19,14 @@ class MissionIn(BaseModel):
 def create_mission(m: MissionIn):
     try:
         return missions.create(m.type, m.name, m.objective, m.stops)
-    except ValueError as e:
+    except (ValueError, KeyError, TypeError) as e:
         raise HTTPException(400, str(e))
 
 
 @router.get("")
 def list_missions():
-    return {"missions": missions.list_missions(),
+    items = missions.list_missions()
+    return {"count": len(items), "missions": items,
             "note": "all plans advisory [SIM]"}
 
 
@@ -46,7 +47,10 @@ class StopIn(BaseModel):
 
 @router.post("/{mid}/stops")
 def add_stop(mid: str, s: StopIn):
-    m = missions.add_stop(mid, s.lat, s.lon, s.activity, s.reason)
+    try:
+        m = missions.add_stop(mid, s.lat, s.lon, s.activity, s.reason)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     if not m:
         raise HTTPException(404, "unknown mission")
     return m
@@ -62,11 +66,12 @@ class RouteIn(BaseModel):
 
 @router.post("/{mid}/route")
 def attach_route(mid: str, r: RouteIn):
-    res = missions.route_for(mid, r.from_lat, r.from_lon, r.to_lat, r.to_lon, r.preset)
+    try:
+        res = missions.route_for(mid, r.from_lat, r.from_lon, r.to_lat, r.to_lon, r.preset)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     if not res:
         raise HTTPException(404, "unknown mission")
-    if res.get("path") and res["path"]:
-        pass
     return res
 
 
@@ -89,6 +94,23 @@ def kml(mid: str):
         raise HTTPException(404, "unknown mission")
     return Response(content=doc, media_type="application/vnd.google-earth.kml+xml",
                     headers={"Content-Disposition": 'attachment; filename="%s.kml"' % mid})
+
+
+@router.get("/{mid}/geojson")
+def geojson_export(mid: str):
+    doc = missions.geojson(mid)
+    if doc is None:
+        raise HTTPException(404, "unknown mission")
+    return doc
+
+
+@router.get("/{mid}/csv")
+def csv_export(mid: str):
+    doc = missions.csv_stops(mid)
+    if doc is None:
+        raise HTTPException(404, "unknown mission")
+    return Response(content=doc, media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": 'attachment; filename="%s_stops.csv"' % mid})
 
 
 @router.get("/{mid}/compare")
@@ -115,4 +137,6 @@ def annotate(mid: str, n: NoteIn):
 
 @router.delete("/{mid}")
 def delete_mission(mid: str):
-    return {"deleted": missions.delete(mid)}
+    if not missions.delete(mid):
+        raise HTTPException(404, "unknown mission")
+    return {"deleted": True}

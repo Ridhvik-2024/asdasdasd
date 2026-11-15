@@ -26,13 +26,18 @@ def create_node(n: NodeIn):
 
 @router.get("/nodes")
 def list_nodes(type: str = None):
-    return {"count": 0, "nodes": nodes.list_nodes(type),
+    items = nodes.list_nodes(type)
+    return {"count": len(items), "nodes": items,
             "note": "8 node types: waypoint|hazard|water|shelter|observation|mission|annotation|panorama_pov"}
 
 
 @router.get("/nodes/near")
 def nodes_near(lat: float, lon: float, radius_km: float = 100, type: str = None):
-    return {"nodes": nodes.near(lat, lon, radius_km, type)}
+    try:
+        items = nodes.near(lat, lon, radius_km, type)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"count": len(items), "nodes": items}
 
 
 @router.get("/nodes/{nid}")
@@ -52,7 +57,10 @@ class NodeUpd(BaseModel):
 
 @router.put("/nodes/{nid}")
 def update_node(nid: str, u: NodeUpd):
-    n = nodes.update(nid, u.lat, u.lon, u.radius_km, u.props)
+    try:
+        n = nodes.update(nid, u.lat, u.lon, u.radius_km, u.props)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     if not n:
         raise HTTPException(404, "unknown node")
     return n
@@ -60,7 +68,9 @@ def update_node(nid: str, u: NodeUpd):
 
 @router.delete("/nodes/{nid}")
 def delete_node(nid: str):
-    return {"deleted": nodes.delete(nid)}
+    if not nodes.delete(nid):
+        raise HTTPException(404, "unknown node")
+    return {"deleted": True}
 
 
 # ------------------------------------------------------------------ presence

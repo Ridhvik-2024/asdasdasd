@@ -167,17 +167,66 @@ class TerrainEngine:
         return self.elev(lat, lon) + self._detail(lat, lon, cell_m)
 
     # ------------------------------------------------------------- slopes
+    def _gradients_m(self):
+        """Meridional (sy = dz/dy) and zonal (sx = dz/dx) dimensionless gradients.
+
+        Uses periodic central differences along longitude so the 0/360 seam has
+        the exact same second-order stencil as interior columns, and guards
+        polar latitudes where cos(lat) -> 0 so zonal gradients stay finite.
+        """
+        self.ensure()
+        dlat_deg = float(self._lats[1] - self._lats[0])
+        dlon_deg = float(self._lons[1] - self._lons[0])
+        gy = np.gradient(self.grid, axis=0)
+        # Periodic central difference across the 0/360 longitude seam:
+        gx = (np.roll(self.grid, -1, axis=1) - np.roll(self.grid, 1, axis=1)) / 2.0
+        dlat_m = KM_PER_DEG * 1000.0 * abs(dlat_deg)
+        cos_lat = np.cos(np.radians(self._lats))
+        dlon_m = KM_PER_DEG * 1000.0 * abs(dlon_deg) * np.maximum(cos_lat, 1e-3)
+        sy = gy / dlat_m
+        sx = np.where(cos_lat[:, None] > 1e-6, gx / dlon_m[:, None], 0.0)
+        return sy, sx
+
     def slope_grid(self):
         self.ensure()
         if self._slope is not None:
             return self._slope
-        gy, gx = np.gradient(self.grid)
-        dlat_m = KM_PER_DEG * 1000.0 * 0.5
-        dlon_m = KM_PER_DEG * 1000.0 * 0.5 * np.cos(np.radians(self._lats))
-        sx = gx / dlon_m[:, None]
-        sy = gy / dlat_m
+        sy, sx = self._gradients_m()
         self._slope = np.degrees(np.arctan(np.sqrt(sx ** 2 + sy ** 2)))
         return self._slope
+
+    def aspect(self, lat, lon):
+        """Downslope compass aspect in degrees [0, 360) (0=N, 90=E, 180=S, 270=W)."""
+        self.ensure()
+        sy, sx = self._gradients_m()
+        lat = float(lat)
+        yi = int(np.clip(np.searchsorted(self._lats, lat) - 1, 0, len(self._lats) - 2))
+        nlon = len(self._lons)
+        dlon = self._lons[1] - self._lons[0]
+        fx = ((float(lon) % 360.0 - self._lons[0]) / dlon) % nlon
+        xi = int(math.floor(fx)) % nlon
+        dz_dy = float(sy[yi, xi])
+        dz_dx = float(sx[yi, xi])
+        if abs(dz_dx) < 1e-12 and abs(dz_dy) < 1e-12:
+            return 0.0
+        # Downslope vector is (-dz_dx east, -dz_dy north)
+        return (math.degrees(math.atan2(-dz_dx, -dz_dy)) + 360.0) % 360.0
+
+    def curvature(self, lat, lon):
+        """Laplacian surface curvature (1/km) — positive convex, negative concave."""
+        self.ensure()
+        dlat_km = KM_PER_DEG * abs(float(self._lats[1] - self._lats[0]))
+        lat = float(lat)
+        yi = int(np.clip(np.searchsorted(self._lats, lat) - 1, 1, len(self._lats) - 2))
+        nlon = len(self._lons)
+        dlon_deg = float(self._lons[1] - self._lons[0])
+        fx = ((float(lon) % 360.0 - self._lons[0]) / dlon_deg) % nlon
+        xi = int(math.floor(fx)) % nlon
+        dlon_km = max(0.05, KM_PER_DEG * abs(dlon_deg) * math.cos(math.radians(self._lats[yi])))
+        c = self.grid[yi, xi]
+        d2y = ((self.grid[yi + 1, xi] - 2.0 * c + self.grid[yi - 1, xi]) / 1000.0) / (dlat_km ** 2)
+        d2x = ((self.grid[yi, (xi + 1) % nlon] - 2.0 * c + self.grid[yi, (xi - 1) % nlon]) / 1000.0) / (dlon_km ** 2)
+        return float(d2x + d2y)
 
     def slope(self, lat, lon):
         self.ensure()
@@ -306,16 +355,15 @@ class TerrainEngine:
     def patch(self, lat, lon, radius_km, n=96):
         self.ensure()
         n = int(max(8, min(n, 160)))
-        dlat = (radius_km * 2.0) / KM_PER_DEG
-        dlon = dlat / max(0.2, math.cos(math.radians(lat)))
         cell_m = (radius_km * 2000.0) / n
         xs = np.linspace(-radius_km, radius_km, n)
         ys = np.linspace(-radius_km, radius_km, n)
         grid = np.zeros((n, n), dtype=np.float64)
         for i in range(n):
-            row_lat = float(lat) + ys[i] / KM_PER_DEG
+            row_lat = max(-90.0, min(90.0, float(lat) + ys[i] / KM_PER_DEG))
+            cos_r = max(1e-3, math.cos(math.radians(row_lat)))
             for j in range(n):
-                row_lon = float(lon) + xs[j] / (KM_PER_DEG * math.cos(math.radians(row_lat)))
+                row_lon = (float(lon) + xs[j] / (KM_PER_DEG * cos_r)) % 360.0
                 grid[i, j] = self.elev_full(row_lat, row_lon, cell_m)
         return {
             "center": {"lat": float(lat), "lon": float(lon) % 360.0},
@@ -368,12 +416,48 @@ class TerrainEngine:
                 z11 = (float(g[i + 1, j + 1]) - z0) * vs
                 for tri in ((x0, y0, z00, x1, y0, z01, x0, y1, z10),
                             (x1, y0, z01, x1, y1, z11, x0, y1, z10)):
-                    buf += struct.pack("<3f", 0.0, 0.0, 0.0)
+                    ux, uy, uz = tri[3] - tri[0], tri[4] - tri[1], tri[5] - tri[2]
+                    vx, vy, vz = tri[6] - tri[0], tri[7] - tri[1], tri[8] - tri[2]
+                    nx = uy * vz - uz * vy
+                    ny = uz * vx - ux * vz
+                    nz = ux * vy - uy * vx
+                    nlen = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+                    buf += struct.pack("<3f", nx / nlen, ny / nlen, nz / nlen)
                     buf += struct.pack("<3f", tri[0], tri[1], tri[2])
                     buf += struct.pack("<3f", tri[3], tri[4], tri[5])
                     buf += struct.pack("<3f", tri[6], tri[7], tri[8])
                     buf += struct.pack("<H", 0)
         return bytes(buf)
+
+    def export_bbox(self, bbox):
+        """Extract sub-grid elevation dataset, coordinate axes, CRS and stats for a bbox."""
+        self.ensure()
+        st = self.bbox_stats(bbox)
+        min_lat, min_lon, max_lat, max_lon = st["bbox"]
+        LATS, LONS = self._lats, self._lons
+        nlon = len(LONS)
+        i0 = int(np.clip(np.searchsorted(LATS, min_lat), 0, len(LATS) - 1))
+        i1 = int(np.clip(np.searchsorted(LATS, max_lat) + 1, 1, len(LATS)))
+        if not st["crosses_antimeridian"]:
+            j0 = int(np.clip(np.searchsorted(LONS, min_lon), 0, nlon - 1))
+            j1 = int(np.clip(np.searchsorted(LONS, max_lon) + 1, 1, nlon))
+            sub_lons = LONS[j0:j1]
+            sub = self.grid[i0:i1, j0:j1]
+        else:
+            ja = int(np.clip(np.searchsorted(LONS, min_lon), 0, nlon - 1))
+            jb = int(np.clip(np.searchsorted(LONS, max_lon) + 1, 1, nlon))
+            sub_lons = np.concatenate([LONS[ja:], LONS[:jb]])
+            sub = np.concatenate([self.grid[i0:i1, ja:], self.grid[i0:i1, :jb]], axis=1)
+        sub_lats = LATS[i0:i1]
+        return {
+            "crs": "IAU:49900 (Mars 2000 east-positive planetocentric 0-360)",
+            "resolution_deg": float(LATS[1] - LATS[0]),
+            "bbox_stats": st,
+            "lats": [round(float(x), 4) for x in sub_lats],
+            "lons": [round(float(x), 4) for x in sub_lons],
+            "elevation_m": [[round(float(v), 1) for v in row] for row in sub],
+            "provenance": self.prov(),
+        }
 
     def prov(self, cell_m=None):
         from .integrity import prov

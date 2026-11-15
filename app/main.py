@@ -1,14 +1,36 @@
-"""NAM v2 backend assembly: FastAPI app with lifespan-managed realtime loops."""
+"""NAM v2 backend assembly: FastAPI app with lifespan-managed realtime loops,
+configurable CORS policy, and optional API-key authentication for mutations."""
 import asyncio
 from contextlib import asynccontextmanager
+import hmac
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from . import config, events, presence
 from .routers import (environment, gazetteer, health, imagery, jev, measurements,
                       missions, nodes, panoramas, resources, science, terrain,
                       walkview, ws)
+
+_MUTATING_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+# Read-only / stateless computation POST endpoints that do not mutate shared state:
+_STATELESS_POST_PREFIXES = (
+    "/measure/",
+    "/layers/compare",
+    "/walkview/init",
+    "/jev/explain",
+)
+
+
+def _extract_token(request: Request) -> str:
+    hdr = request.headers.get("X-API-Key")
+    if hdr:
+        return hdr.strip()
+    auth = request.headers.get("Authorization") or ""
+    if auth.lower().startswith("bearer "):
+        return auth[7:].strip()
+    return ""
 
 
 @asynccontextmanager
@@ -45,9 +67,28 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+@app.middleware("http")
+async def api_key_mutation_guard(request: Request, call_next):
+    """When config.API_KEY (NAM_API_KEY) is configured, require a valid key on
+    all state-mutating endpoints while keeping public read/measurement routes open."""
+    expected = config.API_KEY
+    if expected and request.method in _MUTATING_METHODS:
+        path = request.url.path
+        if not path.startswith(_STATELESS_POST_PREFIXES):
+            provided = _extract_token(request)
+            if not provided or not hmac.compare_digest(provided, expected):
+                return JSONResponse(
+                    status_code=401,
+                    content={"detail": "valid X-API-Key or Bearer token required for mutating operation"},
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+    return await call_next(request)
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=config.CORS_ORIGINS,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

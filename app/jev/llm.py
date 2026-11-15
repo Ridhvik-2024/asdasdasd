@@ -2,8 +2,8 @@
 serving a 3B-class GGUF Q4_K_M instruct model, CPU only, ~3 GB RAM).
 
 When no endpoint is configured the deterministic intent router handles all
-conversation (the plan-mandated fallback). The adapter returns the same
-plan/step structure either way.
+conversation (the plan-mandated fallback). Model-generated tool calls are
+independently validated against JSON schema + Mars semantic constraints.
 """
 import json
 
@@ -18,7 +18,7 @@ def available():
 
 def describe():
     return {
-        "adapter": "openai-compatible (llama.cpp) with JSON-schema-constrained tool calls",
+        "adapter": "openai-compatible (llama.cpp) with JSON-schema + semantic tool validation",
         "configured": available(),
         "base_url": config.LLM_BASE_URL or None,
         "model": config.LLM_MODEL if available() else None,
@@ -27,9 +27,50 @@ def describe():
     }
 
 
+def validate_planned_tool_calls(calls):
+    """Parse and validate OpenAI-style tool_calls from an LLM response.
+
+    Returns (valid_steps, rejected_calls). Any malformed JSON, non-object
+    arguments, unregistered tool, unexpected extra keys, invalid enum, or
+    out-of-range Mars coordinates are rejected fail-closed instead of being
+    forwarded blindly to execution.
+    """
+    from .tools import validate_tool_call
+
+    valid_steps = []
+    rejected = []
+    for raw_call in (calls or []):
+        if not isinstance(raw_call, dict):
+            rejected.append({"call": raw_call, "error": "tool_call entry must be an object"})
+            continue
+        fn = raw_call.get("function") if isinstance(raw_call.get("function"), dict) else raw_call
+        tool_name = fn.get("name") or raw_call.get("tool")
+        raw_args = fn.get("arguments") if "arguments" in fn else raw_call.get("args", {})
+        if isinstance(raw_args, str):
+            try:
+                parsed_args = json.loads(raw_args or "{}")
+            except (TypeError, ValueError) as exc:
+                rejected.append({"tool": tool_name, "error": "malformed JSON arguments: %s" % exc})
+                continue
+        else:
+            parsed_args = raw_args
+        if not isinstance(parsed_args, dict):
+            rejected.append({"tool": tool_name, "error": "tool arguments must decode to an object"})
+            continue
+        err = validate_tool_call(tool_name, parsed_args)
+        if err:
+            rejected.append({"tool": tool_name, "args": parsed_args, "error": err})
+            continue
+        step = {"tool": tool_name, "args": parsed_args}
+        if raw_call.get("id"):
+            step["id"] = str(raw_call["id"])
+        valid_steps.append(step)
+    return valid_steps, rejected
+
+
 def plan_with_llm(message, map_context, timeout_s=30.0):
     """Ask the local model to plan tool calls. Returns
-    {"steps": [{"tool","args"}], "intents": [], "text": ...} or None."""
+    {"steps": [{"tool","args"}], "rejected": [...], "intents": [], "text": ...} or None."""
     if not available():
         return None
     tools = [{"type": "function",
@@ -60,11 +101,14 @@ def plan_with_llm(message, map_context, timeout_s=30.0):
     except Exception:
         return None
     try:
-        calls = data["choices"][0]["message"].get("tool_calls", [])
-        steps = [{"tool": c["function"]["name"],
-                  "args": json.loads(c["function"]["arguments"] or "{}")} for c in calls]
-        text = data["choices"][0]["message"].get("content") or ""
-        return {"steps": steps, "intents": [], "text": text}
+        msg_obj = data["choices"][0]["message"]
+        calls = msg_obj.get("tool_calls") or []
+        steps, rejected = validate_planned_tool_calls(calls)
+        if calls and not steps:
+            # Every model-proposed tool call failed validation: fall back to deterministic router.
+            return None
+        text = msg_obj.get("content") or ""
+        return {"steps": steps, "rejected": rejected, "intents": [], "text": text}
     except Exception:
         return None
 

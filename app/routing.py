@@ -18,7 +18,7 @@ import math
 
 from . import terrain
 from .integrity import prov, with_sim
-from .mars import KM_PER_DEG, hav_km
+from .mars import KM_PER_DEG, hav_km, validate_coords
 
 PRESETS = {
     "balanced": {"slope": 1.0, "dist": 1.0},
@@ -54,7 +54,24 @@ def _unwrap_lons(lon1, lon2):
     return lon1, lon1 + dlon_signed
 
 
+def _degraded_stats(preset):
+    """Standardised stats block for degraded routes so callers always receive
+    a consistent schema regardless of whether A* found an in-grid path."""
+    return {
+        "length_km": None,
+        "mean_slope_deg": None,
+        "max_slope_deg": None,
+        "elevation_gain_m": None,
+        "elevation_loss_m": None,
+        "est_traverse_sols": None,
+        "cost_preset": preset,
+        "degraded": True,
+    }
+
+
 def plan_route(lat1, lon1, lat2, lon2, preset="balanced"):
+    lat1, lon1 = validate_coords(lat1, lon1)
+    lat2, lon2 = validate_coords(lat2, lon2)
     if preset not in PRESETS:
         preset = "balanced"
     T = terrain.engine().ensure()
@@ -64,8 +81,8 @@ def plan_route(lat1, lon1, lat2, lon2, preset="balanced"):
 
     pad_lat = abs(lat2 - lat1) * 0.25 + 0.4
     pad_lon = abs(lon2_u - lon1_u) * 0.25 + 0.4
-    min_lat = min(lat1, lat2) - pad_lat
-    max_lat = max(lat1, lat2) + pad_lat
+    min_lat = max(-90.0, min(lat1, lat2) - pad_lat)
+    max_lat = min(90.0, max(lat1, lat2) + pad_lat)
     min_lon = min(lon1_u, lon2_u) - pad_lon
     max_lon = max(lon1_u, lon2_u) + pad_lon
 
@@ -95,7 +112,7 @@ def plan_route(lat1, lon1, lat2, lon2, preset="balanced"):
     slope = {}
     for i in range(nl):
         dlat_m = M_PER_DEG * step
-        dlon_m = M_PER_DEG * step * math.cos(math.radians(lats[i]))
+        dlon_m = max(1.0, M_PER_DEG * step * math.cos(math.radians(lats[i])))
         for j in range(nc):
             # dh/dy (latitude direction), dimensionless
             if 0 < i < nl - 1:
@@ -151,9 +168,16 @@ def plan_route(lat1, lon1, lat2, lon2, preset="balanced"):
         return math.hypot(dlat, dlon)
 
     w = PRESETS[preset]
+
+    def h_cost(a, b):
+        # Scale distance heuristic by w["dist"] so h_cost(u, goal) never
+        # exceeds minimum flat-terrain movement cost (keeps A* admissible &
+        # consistent across every preset, including "terrain" where dist=0.9).
+        return w["dist"] * h(a, b)
+
     gscore = {start: 0.0}
     came = {}
-    open_heap = [(h(start, goal), 0.0, start)]
+    open_heap = [(h_cost(start, goal), 0.0, start)]
     closed = set()
     found = False
     while open_heap:
@@ -185,18 +209,19 @@ def plan_route(lat1, lon1, lat2, lon2, preset="balanced"):
                 if ng < gscore.get(nb, float("inf")):
                     gscore[nb] = ng
                     came[nb] = cur
-                    heapq.heappush(open_heap, (ng + h(nb, goal), ng, nb))
+                    heapq.heappush(open_heap, (ng + h_cost(nb, goal), ng, nb))
     if not found:
-        # Fallback straight-line path. We are deliberately honest about the
-        # degraded status: there is no measured length, no slope statistics
-        # and no estimated traversal time, because no in-grid route was found.
+        # Fallback straight-line path. Standardised response schema with
+        # explicit None stats so callers never fail on missing keys.
         path_pts = [{"lat": lat1, "lon": float(lon1) % 360.0},
                     {"lat": lat2, "lon": float(lon2) % 360.0}]
         return {"path": path_pts, "length_km": None, "status": "degraded",
+                "stats": _degraded_stats(preset),
                 "note": "no in-grid route found (grid too coarse or terrain "
                         "impassable for these endpoints)",
                 "sim": True,
                 "provenance": {"source": "NAM A* degraded fallback [SIM]",
+                               "cost_preset": preset,
                                "note": "straight line shown; no in-grid route"}}
 
     nodes = []
@@ -231,8 +256,10 @@ def plan_route(lat1, lon1, lat2, lon2, preset="balanced"):
         "elevation_loss_m": round(sum(max(0, path[i]["elev_m"] - path[i + 1]["elev_m"]) for i in range(len(path) - 1)), 1),
         "est_traverse_sols": round(est_sols, 1),
         "cost_preset": preset,
+        "degraded": False,
     }
-    return {"path": path, "length_km": stats["length_km"], "stats": stats,
+    return {"path": path, "length_km": stats["length_km"], "status": "ok",
+            "stats": stats,
             "sim": True,
             "provenance": {"source": "NAM A* over demo terrain grid [SIM]",
                            "cost_preset": preset,

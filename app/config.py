@@ -19,7 +19,16 @@ CTX_TILE_TEMPLATE = os.getenv(
     "NAM_CTX_TILE_TEMPLATE",
     "https://murray-lab.caltech.edu/CTX/V01/TileData/Z{z}/{y}_{x}.jpg")
 
-VERSION = "2.2.2"
+# Optional security / deployment settings.
+# When NAM_API_KEY is empty (default for reference-laptop & automated gates),
+# local unauthenticated requests are permitted. When set, mutating endpoints
+# require X-API-Key or Authorization: Bearer <key>.
+API_KEY = os.getenv("NAM_API_KEY", "").strip()
+CORS_ORIGINS = [
+    o.strip() for o in os.getenv("NAM_CORS_ORIGINS", "*").split(",") if o.strip()
+] or ["*"]
+
+VERSION = "2.3.0"
 RELEASES = [
     {"phase": 1, "release": "v2.0.0-backend", "title": "The Google Earth Core",
      "scope": "terrain engine, imagery ladder + tile proxy, gazetteer + search + location cards, measurement suite, integrity layer"},

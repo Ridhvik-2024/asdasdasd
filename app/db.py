@@ -4,14 +4,16 @@ The production PostGIS path is provided in infra/postgis_schema.sql and
 docker-compose.yml; this DAO keeps a single-file DB so the whole platform runs
 on one developer machine as the build plan requires.
 """
+from contextlib import contextmanager
 import json
 import sqlite3
 import threading
 
 from . import config
 
-_lock = threading.Lock()
+_lock = threading.RLock()
 _conn = None
+_tx_depth = 0
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS bookmarks (
@@ -65,20 +67,70 @@ CREATE TABLE IF NOT EXISTS chat_logs (
   ts TEXT DEFAULT CURRENT_TIMESTAMP,
   role TEXT, content TEXT
 );
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  version INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  applied TEXT DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_mission_stops_mission_ord ON mission_stops(mission_id, ord);
+CREATE INDEX IF NOT EXISTS idx_routes_mission ON routes(mission_id, created DESC);
+CREATE INDEX IF NOT EXISTS idx_nodes_type ON nodes(type, created DESC);
 """
+
+MIGRATIONS = [
+    (1, "initial_core_tables_and_indexes", ""),
+]
 
 
 def init_db():
     global _conn
     if _conn is not None:
         return _conn
-    _conn = sqlite3.connect(str(config.DB_PATH), check_same_thread=False)
-    _conn.row_factory = sqlite3.Row
-    _conn.execute("PRAGMA journal_mode=WAL")
     with _lock:
-        _conn.executescript(SCHEMA)
-        _conn.commit()
+        if _conn is not None:
+            return _conn
+        conn = sqlite3.connect(str(config.DB_PATH), check_same_thread=False, isolation_level=None)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA foreign_keys=ON")
+        conn.executescript(SCHEMA)
+        applied = {
+            r["version"]
+            for r in conn.execute("SELECT version FROM schema_migrations").fetchall()
+        }
+        for ver, name, ddl in MIGRATIONS:
+            if ver not in applied:
+                if ddl:
+                    conn.executescript(ddl)
+                conn.execute(
+                    "INSERT INTO schema_migrations (version, name) VALUES (?, ?)",
+                    (ver, name),
+                )
+        _conn = conn
     return _conn
+
+
+@contextmanager
+def tx():
+    """Thread-safe, re-entrant atomic SQLite transaction context manager."""
+    global _tx_depth
+    c = init_db()
+    with _lock:
+        outermost = _tx_depth == 0
+        if outermost:
+            c.execute("BEGIN IMMEDIATE")
+        _tx_depth += 1
+        try:
+            yield c
+        except Exception:
+            _tx_depth -= 1
+            if outermost:
+                c.execute("ROLLBACK")
+            raise
+        else:
+            _tx_depth -= 1
+            if outermost:
+                c.execute("COMMIT")
 
 
 def q(sql, params=()):
@@ -92,8 +144,15 @@ def ex(sql, params=()):
     c = init_db()
     with _lock:
         cur = c.execute(sql, params)
-        c.commit()
     return cur.lastrowid
+
+
+def ex_count(sql, params=()):
+    """Execute a statement and return the number of affected rows."""
+    c = init_db()
+    with _lock:
+        cur = c.execute(sql, params)
+    return cur.rowcount
 
 
 def j(obj):
