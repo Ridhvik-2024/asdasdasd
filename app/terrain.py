@@ -102,6 +102,7 @@ class TerrainEngine:
         self._lats = None
         self._lons = None
         self._slope = None
+        self._raster_cache = {}
 
     def _load(self):
         with self._lock:
@@ -458,6 +459,254 @@ class TerrainEngine:
             "elevation_m": [[round(float(v), 1) for v in row] for row in sub],
             "provenance": self.prov(),
         }
+
+    def elevation_grid_compact(self, step=2):
+        """Downsampled global elevation matrix (N-to-S, 0-360E) for client 3D & cursor sampling."""
+        self.ensure()
+        st = max(1, min(int(step), 10))
+        sub = self.grid[::-st, ::st]
+        lats = self._lats[::-st]
+        lons = self._lons[::st]
+        return {
+            "rows": int(sub.shape[0]),
+            "cols": int(sub.shape[1]),
+            "step_deg": round(float(self._lats[1] - self._lats[0]) * st, 3),
+            "min_m": round(float(sub.min()), 1),
+            "max_m": round(float(sub.max()), 1),
+            "lats": [round(float(x), 3) for x in lats],
+            "lons": [round(float(x), 3) for x in lons],
+            "grid_m": [[round(float(v), 1) for v in row] for row in sub],
+            "provenance": self.prov(),
+        }
+
+    @staticmethod
+    def _encode_png_rgb(rgb: np.ndarray) -> bytes:
+        """Pure-Python + zlib RGB PNG encoder (zero Pillow dependency)."""
+        h, w, c = rgb.shape
+        assert c == 3
+        raw = b"".join(b"\x00" + rgb[y].tobytes() for y in range(h))
+
+        def chunk(tag: bytes, data: bytes) -> bytes:
+            return (
+                struct.pack("!I", len(data))
+                + tag
+                + data
+                + struct.pack("!I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+            )
+
+        ihdr = struct.pack("!IIBBBBB", w, h, 8, 2, 0, 0, 0)
+        return (
+            b"\x89PNG\r\n\x1a\n"
+            + chunk(b"IHDR", ihdr)
+            + chunk(b"IDAT", zlib.compress(raw, level=6))
+            + chunk(b"IEND", b"")
+        )
+
+    @staticmethod
+    def _ramp(t: np.ndarray, stops) -> np.ndarray:
+        """Piecewise linear RGB color ramp over normalized array t in [0, 1]."""
+        t = np.clip(t, 0.0, 1.0)
+        xs = np.array([s[0] for s in stops], dtype=np.float64)
+        rs = np.array([s[1][0] for s in stops], dtype=np.float64)
+        gs = np.array([s[1][1] for s in stops], dtype=np.float64)
+        bs = np.array([s[1][2] for s in stops], dtype=np.float64)
+        r = np.interp(t, xs, rs)
+        g = np.interp(t, xs, gs)
+        b = np.interp(t, xs, bs)
+        return np.stack([r, g, b], axis=-1)
+
+    def render_raster_png(self, mode: str = "mars-relief") -> bytes:
+        """Generate and cache a 720x360 equirectangular Mars layer PNG [SIM]."""
+        self.ensure()
+        key = (mode or "mars-relief").lower().strip()
+        if key in self._raster_cache:
+            return self._raster_cache[key]
+
+        # Flip N->S so row 0 is +90 deg North and col 0..719 is 0..360 deg East
+        E = self.grid[::-1, :]
+        lats = self._lats[::-1]
+        lons = self._lons
+        LON, LAT = np.meshgrid(lons, lats)
+
+        # Hillshade from periodic zonal + meridional gradients
+        gy = np.gradient(E, axis=0)
+        gx = (np.roll(E, -1, axis=1) - np.roll(E, 1, axis=1)) / 2.0
+        # Light from NW azimuth 315 deg, altitude 38 deg
+        scale = 1.0 / 2600.0
+        nx, ny, nz = -gx * scale, gy * scale, np.ones_like(E)
+        nlen = np.sqrt(nx * nx + ny * ny + nz * nz)
+        lx, ly, lz = -0.55, 0.55, 0.628
+        shade = np.clip((nx * lx + ny * ly + nz * lz) / nlen, 0.25, 1.25)
+
+        # Subtle deterministic multi-frequency surface albedo variation
+        albedo_var = (
+            0.06 * np.sin(np.radians(LON * 3.0 + 18.0)) * np.cos(np.radians(LAT * 2.5))
+            + 0.04 * np.cos(np.radians(LON * 7.0 - LAT * 5.0))
+            + 0.03 * np.sin(np.radians(LON * 13.0 + LAT * 9.0))
+        )
+
+        # Normalize elevation for palettes
+        e_norm = np.clip((E + 8200.0) / 30000.0, 0.0, 1.0)
+
+        if key == "heightmap":
+            g8 = np.clip(e_norm * 255.0, 0, 255).astype(np.uint8)
+            rgb = np.stack([g8, g8, g8], axis=-1)
+        elif key in ("mars-relief", "mdim21"):
+            # Realistic Martian rusty color palette modulated by albedo provinces + polar caps
+            base = self._ramp(
+                e_norm,
+                [
+                    (0.00, (110, 62, 42)),   # Hellas floor
+                    (0.18, (148, 82, 52)),   # Northern lowlands
+                    (0.32, (182, 102, 62)),  # Mid-elevation plains
+                    (0.50, (198, 120, 74)),  # Highlands & bright dust
+                    (0.72, (214, 146, 98)),  # Tharsis rise
+                    (0.92, (226, 178, 142)), # High shields
+                    (1.00, (238, 206, 182)), # Olympus summit
+                ],
+            )
+            # Dark basaltic albedo features (Syrtis Major, Acidalia, Margaritifer, Valles Marineris)
+            dark = np.zeros_like(E)
+            for la0, lo0, s_la, s_lo, strength in [
+                (9.0, 69.0, 11.0, 12.0, 0.34),    # Syrtis Major
+                (45.0, 338.0, 13.0, 20.0, 0.25),  # Acidalia
+                (-10.0, 290.0, 6.0, 24.0, 0.28),  # Valles Marineris & Margaritifer
+                (-18.0, 170.0, 12.0, 28.0, 0.20), # Terra Cimmeria/Sirenum dark band
+                (-2.0, 354.0, 8.0, 14.0, 0.22),   # Meridiani
+            ]:
+                dlon = ((LON - lo0 + 180.0) % 360.0) - 180.0
+                dark += strength * np.exp(-0.5 * (((LAT - la0) / s_la) ** 2 + (dlon / s_lo) ** 2))
+            # Bright dusty regions (Arabia, Tharsis, Elysium, Amazonis)
+            bright = np.zeros_like(E)
+            for la0, lo0, s_la, s_lo, strength in [
+                (20.0, 30.0, 16.0, 22.0, 0.16),   # Arabia Terra
+                (16.0, 205.0, 15.0, 24.0, 0.14),  # Amazonis
+                (6.0, 250.0, 18.0, 22.0, 0.12),   # Tharsis dust
+            ]:
+                dlon = ((LON - lo0 + 180.0) % 360.0) - 180.0
+                bright += strength * np.exp(-0.5 * (((LAT - la0) / s_la) ** 2 + (dlon / s_lo) ** 2))
+            mod = np.clip(1.0 - dark + bright + albedo_var, 0.55, 1.28) * (0.45 + 0.65 * shade)
+            rgb_f = base * mod[:, :, None]
+            # Polar ice caps (north + south layered deposits)
+            cap_edge_n = 80.5 + 2.2 * np.sin(np.radians(LON * 3.0)) + 1.1 * np.cos(np.radians(LON * 5.0))
+            cap_edge_s = -82.0 + 2.5 * np.cos(np.radians(LON * 2.0 + 40.0))
+            cap = np.clip((LAT - cap_edge_n) / 3.0, 0.0, 1.0) + np.clip((cap_edge_s - LAT) / 3.0, 0.0, 1.0)
+            cap = np.clip(cap, 0.0, 1.0)
+            ice_col = np.array([235.0, 232.0, 228.0]) * (0.75 + 0.25 * shade[:, :, None])
+            rgb_f = rgb_f * (1.0 - cap[:, :, None]) + ice_col * cap[:, :, None]
+            rgb = np.clip(rgb_f, 0, 255).astype(np.uint8)
+        elif key in ("ctx-murray", "hirise-insets"):
+            # Crisp panchromatic orbital mosaic look [SIM fallback]
+            gray = (128.0 + 75.0 * (shade - 0.72) + 28.0 * (e_norm - 0.35) + 18.0 * albedo_var)
+            gray = np.clip(gray, 22, 240)
+            rgb = np.stack([gray * 1.02, gray * 0.99, gray * 0.95], axis=-1).astype(np.uint8)
+        elif key == "mola-color":
+            base = self._ramp(
+                e_norm,
+                [
+                    (0.00, (36, 36, 148)),   # deep blue (-8 km)
+                    (0.14, (40, 120, 212)),  # azure
+                    (0.24, (46, 194, 190)),  # cyan
+                    (0.34, (78, 198, 92)),   # green
+                    (0.46, (226, 222, 68)),  # yellow
+                    (0.58, (238, 132, 42)),  # orange
+                    (0.76, (206, 46, 42)),   # crimson
+                    (0.92, (218, 152, 186)), # alpine pink
+                    (1.00, (248, 248, 250)), # white summit
+                ],
+            )
+            rgb = np.clip(base * (0.55 + 0.55 * shade[:, :, None]), 0, 255).astype(np.uint8)
+        elif key == "mola-shaded":
+            g = np.clip((48.0 + 178.0 * shade + 24.0 * (e_norm - 0.3)), 18, 245)
+            rgb = np.stack([g, g, g], axis=-1).astype(np.uint8)
+        elif key == "themis-day":
+            t = np.clip(0.55 * shade + 0.25 * e_norm + 0.20 * (1.0 - np.abs(LAT) / 90.0), 0.0, 1.0)
+            base = self._ramp(
+                t,
+                [
+                    (0.0, (24, 18, 34)),
+                    (0.3, (96, 36, 46)),
+                    (0.6, (198, 96, 42)),
+                    (0.85, (244, 184, 72)),
+                    (1.0, (255, 244, 196)),
+                ],
+            )
+            rgb = np.clip(base, 0, 255).astype(np.uint8)
+        elif key == "themis-night":
+            slope_n = np.clip(self.slope_grid()[::-1, :] / 8.0, 0.0, 1.0)
+            t = np.clip(0.52 * slope_n + 0.28 * (1.0 - np.abs(LAT) / 95.0) + 0.20 * shade, 0.0, 1.0)
+            base = self._ramp(
+                t,
+                [
+                    (0.0, (12, 18, 42)),
+                    (0.32, (46, 34, 98)),
+                    (0.62, (36, 134, 178)),
+                    (0.85, (142, 224, 210)),
+                    (1.0, (248, 244, 178)),
+                ],
+            )
+            rgb = np.clip(base, 0, 255).astype(np.uint8)
+        elif key == "sim3292-geology":
+            # Stratigraphic province visualization (Noachian / Hesperian / Amazonian / Volcanic / Polar)
+            rgb_f = np.zeros((E.shape[0], E.shape[1], 3), dtype=np.float64)
+            # Base: Southern Noachian highlands
+            rgb_f[:] = np.array([186.0, 132.0, 82.0])
+            # Northern Amazonian lowlands
+            north = (LAT > -2.0) & (E < 0.0)
+            rgb_f[north] = np.array([218.0, 196.0, 142.0])
+            # Hesperian transition / ridged plains
+            hesp = ((LAT >= -25.0) & (LAT <= 15.0) & (E >= -1500.0) & (E <= 1800.0)) | (E < -3200.0)
+            rgb_f[hesp] = np.array([154.0, 172.0, 114.0])
+            # Deep basins (Hellas, Argyre, Isidis)
+            basin = E < -4000.0
+            rgb_f[basin] = np.array([86.0, 146.0, 154.0])
+            # Volcanic provinces (Tharsis, Olympus, Elysium)
+            volc = E > 3600.0
+            rgb_f[volc] = np.array([196.0, 82.0, 108.0])
+            # Polar layered deposits
+            polar = np.abs(LAT) > 78.0
+            rgb_f[polar] = np.array([224.0, 228.0, 244.0])
+            rgb = np.clip(rgb_f * (0.55 + 0.50 * shade[:, :, None]), 0, 255).astype(np.uint8)
+        elif key in ("swim-probability", "depth-to-ice"):
+            # Mid-to-high latitude subsurface water-ice stability heuristic (SWIM-consistent [SIM])
+            lat_abs = np.abs(LAT)
+            prob = np.clip((lat_abs - 26.0) / 34.0, 0.0, 1.0)
+            # Boost known SWIM mid-latitude zones (Arcadia, Utopia, Deuteronilus, Phlegra)
+            for la0, lo0, s_la, s_lo, boost in [
+                (45.0, 190.0, 10.0, 22.0, 0.35),
+                (46.0, 114.0, 10.0, 22.0, 0.28),
+                (39.0, 336.0, 9.0, 18.0, 0.30),
+                (-42.0, 85.0, 10.0, 20.0, 0.22),
+            ]:
+                dlon = ((LON - lo0 + 180.0) % 360.0) - 180.0
+                prob += boost * np.exp(-0.5 * (((LAT - la0) / s_la) ** 2 + (dlon / s_lo) ** 2))
+            prob = np.clip(prob * np.where(E > 4500.0, 0.35, 1.0), 0.0, 1.0)
+            stops = (
+                [
+                    (0.0, (42, 34, 34)),
+                    (0.25, (34, 62, 104)),
+                    (0.55, (36, 152, 208)),
+                    (0.80, (92, 224, 242)),
+                    (1.0, (226, 250, 255)),
+                ]
+                if key == "swim-probability"
+                else [
+                    (0.0, (38, 30, 32)),
+                    (0.30, (62, 52, 146)),
+                    (0.60, (36, 134, 232)),
+                    (0.82, (46, 218, 222)),
+                    (1.0, (214, 252, 255)),
+                ]
+            )
+            base = self._ramp(prob, stops)
+            rgb = np.clip(base * (0.58 + 0.48 * shade[:, :, None]), 0, 255).astype(np.uint8)
+        else:
+            # Default fallback: mars-relief
+            return self.render_raster_png("mars-relief")
+
+        data = self._encode_png_rgb(rgb)
+        self._raster_cache[key] = data
+        return data
 
     def prov(self, cell_m=None):
         from .integrity import prov

@@ -1,0 +1,44 @@
+[
+ {
+  "id": "unavail-dsn-live",
+  "name": "Live NASA Deep Space Network spacecraft telemetry",
+  "reason": "Operational mission telemetry and real-time spacecraft state vectors are not served by NAM backend connectors.",
+  "access_path": "https://eyes.nasa.gov/apps/dsn-now/dsn.html"
+ },
+ {
+  "id": "unavail-rover-rt-pose",
+  "name": "Real-time millimeter rover pose / SPICE kernels",
+  "reason": "Authoritative SPICE NAIF kernels are released periodically and require offline kernel ingestion.",
+  "access_path": "https://naif.jpl.nasa.gov/naif/data_mars.html"
+ },
+ {
+  "id": "unavail-oltaris",
+  "name": "NASA OLTARIS full radiation transport simulation",
+  "reason": "OLTARIS requires authenticated NASA LaRC job submission; NAM uses a RAD-anchored [SIM] scaling model.",
+  "access_path": "https://oltaris.nasa.gov/"
+ },
+ {
+  "id": "unavail-marci-daily-opacity",
+  "name": "Real-time daily MARCI dust optical-depth (tau) feed",
+  "reason": "Daily global dust maps are published as weekly weather reports rather than a live low-latency API.",
+  "access_path": "https://www.msss.com/msss_images/subject/weather_reports.html"
+ },
+ {
+  "id": "unavail-proprietary-highres",
+  "name": "Non-public or restricted stereo DTM products",
+  "reason": "Only publicly archived PDS/USGS/Murray Lab datasets are proxied.",
+  "access_path": "https://pds-imaging.jpl.nasa.gov/"
+ },
+ {
+  "id": "unavail-planetary-protection",
+  "name": "Flight-certified Special Regions planetary-protection masks",
+  "reason": "COSPAR / NASA Planetary Protection compliance maps require mission-specific engineering review.",
+  "access_path": "https://sma.nasa.gov/sma-disciplines/planetary-protection"
+ },
+ {
+  "id": "unavail-flight-hazards",
+  "name": "Flight-certified Entry, Descent & Landing (EDL) hazard maps",
+  "reason": "NAM slope/hazard tools are exploratory and derived from demo/MOLA DEMs; EDL requires HiRISE 1 m stereo DTMs.",
+  "access_path": "https://www.uahirise.org/dtm/"
+ }
+]

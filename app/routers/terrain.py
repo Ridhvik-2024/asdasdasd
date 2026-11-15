@@ -1,9 +1,11 @@
 """Elevation and terrain services (grid, slope, aspect, curvature, profiles, patches, hazard)."""
-from fastapi import APIRouter, HTTPException
+import math
+
+from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel
 
-from .. import terrain
-from ..integrity import with_sim
+from .. import seeds, terrain
+from ..integrity import prov, with_sim
 from ..mars import validate_coords, validate_lat, validate_lon
 
 router = APIRouter(tags=["terrain"])
@@ -56,7 +58,7 @@ def profile(p: ProfileIn):
 @router.get("/terrain/patch")
 def terrain_patch(lat: float, lon: float, radius_km: float = 20.0, n: int = 96):
     vlat, vlon = _check_coords(lat, lon)
-    if radius_km <= 0:
+    if not math.isfinite(radius_km) or radius_km <= 0:
         raise HTTPException(400, "radius_km must be > 0")
     return T.ensure().patch(vlat, vlon, radius_km, n)
 
@@ -64,7 +66,7 @@ def terrain_patch(lat: float, lon: float, radius_km: float = 20.0, n: int = 96):
 @router.get("/terrain/mesh")
 def terrain_mesh(lat: float, lon: float, radius_km: float = 2.0, n: int = 64):
     vlat, vlon = _check_coords(lat, lon)
-    if radius_km <= 0:
+    if not math.isfinite(radius_km) or radius_km <= 0:
         raise HTTPException(400, "radius_km must be > 0")
     return T.ensure().mesh(vlat, vlon, radius_km, n)
 
@@ -92,3 +94,52 @@ def hazard(min_lat: float, min_lon: float, max_lat: float, max_lon: float):
     _check_bbox(min_lat, min_lon, max_lat, max_lon)
     st = T.ensure().bbox_stats((min_lat, min_lon, max_lat, max_lon))
     return with_sim(st, note="hazard score = f(mean slope, max slope) [SIM]")
+
+
+RASTER_MODES = {
+    "mars-relief", "mdim21", "ctx-murray", "hirise-insets",
+    "mola-color", "mola-shaded", "themis-day", "themis-night",
+    "sim3292-geology", "swim-probability", "depth-to-ice", "heightmap",
+}
+
+
+@router.get("/terrain/raster/{mode}.png")
+def terrain_raster(mode: str):
+    key = mode.lower().strip()
+    if key not in RASTER_MODES:
+        raise HTTPException(404, f"unknown raster mode {mode}; valid: {sorted(RASTER_MODES)}")
+    png = T.ensure().render_raster_png(key)
+    return Response(
+        content=png,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "public, max-age=3600",
+            "X-NAM-Provenance": f"demo-synthetic-grid [SIM] raster:{key}",
+        },
+    )
+
+
+@router.get("/terrain/elevation_grid")
+def elevation_grid(step: int = 2):
+    if step < 1 or step > 10:
+        raise HTTPException(400, "step must be between 1 and 10")
+    return T.ensure().elevation_grid_compact(step=step)
+
+
+@router.get("/terrain/flyovers")
+def list_flyovers():
+    items = seeds.flyovers()
+    return {
+        "count": len(items),
+        "flyovers": items,
+        "provenance": prov("USGS Gazetteer / NASA JPL landmark flyover camera paths"),
+    }
+
+
+@router.get("/terrain/flyovers/{fid}")
+def get_flyover(fid: str):
+    item = seeds.flyover(fid)
+    if not item:
+        raise HTTPException(404, "flyover not found")
+    return {"flyover": item, "provenance": prov(item.get("src", "USGS Gazetteer"))}
+

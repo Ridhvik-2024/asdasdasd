@@ -13,6 +13,17 @@ from . import retrieval, tools as jt
 MOUNTAINS_RANK = ["Olympus Mons", "Ascraeus Mons", "Arsia Mons", "Pavonis Mons",
                   "Elysium Mons", "Alba Mons", "Tharsis Tholus", "Ceraunius Tholus"]
 
+PUBLISHED_MOUNTAIN_HEIGHTS_KM = {
+    "Olympus Mons": 21.9,
+    "Ascraeus Mons": 18.2,
+    "Arsia Mons": 17.7,
+    "Pavonis Mons": 14.3,
+    "Elysium Mons": 14.3,
+    "Alba Mons": 6.8,
+    "Tharsis Tholus": 3.0,
+    "Ceraunius Tholus": 3.0,
+}
+
 ROVER_NAMES = ("perseverance", "curiosity", "opportunity", "spirit", "zhurong")
 _ROVER_ALT = "|".join(ROVER_NAMES)
 ROVER_ROUTE_RE = re.compile(
@@ -190,18 +201,24 @@ def plan_for(message, ctx=None):
     if "highest" in msg or "tallest" in msg or ("mountain" in msg and "show" in msg):
         from ..terrain import engine as _eng
         Te = _eng()
-        p.add("analyze_terrain", bbox=[5.0, 230.0, 45.0, 260.0])   # Tharsis rise
+        p.add("analyze_terrain", bbox=[-15.0, 220.0, 45.0, 265.0])   # Tharsis rise
         rows = []
         for name in MOUNTAINS_RANK:
             loc = _loc(name)
             if loc:
                 e = Te.elev(loc["lat"], loc["lon"])
-                rows.append((e, loc["name"]))
-        rows.sort(reverse=True)
+                pub_km = PUBLISHED_MOUNTAIN_HEIGHTS_KM.get(
+                    name, PUBLISHED_MOUNTAIN_HEIGHTS_KM.get(loc["name"])
+                )
+                rows.append((e, loc["name"], pub_km))
+        rows.sort(key=lambda r: r[0], reverse=True)
         lines = ["Highest known volcanic mountains on Mars (elevation from demo grid [SIM], "
                  "published summit heights in the notes):"]
-        lines += ["- %s: ~%.0f m on the demo grid (published ~%.1f km)" % (n, e, k)
-                  for (e, n), k in zip(rows, [21.9, 18.2, 17.7, 14.3, 14.3, 6.8, 3.0, 3.0])]
+        for e, n, k in rows:
+            if k is not None:
+                lines.append("- %s: ~%.0f m on the demo grid (published ~%.1f km)" % (n, e, k))
+            else:
+                lines.append("- %s: ~%.0f m on the demo grid" % (n, e))
         lines.append("Provenance: USGS gazetteer feature positions; MOLA published summit heights.")
         return p, (lambda res: "\n".join(lines))
 

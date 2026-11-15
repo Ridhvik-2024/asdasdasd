@@ -33,12 +33,15 @@ async def ws_events(ws: WebSocket, since_id: int = None):
 
 
 @router.websocket("/ws/presence")
-async def ws_presence(ws: WebSocket):
+async def ws_presence(ws: WebSocket, since_id: int = None):
     await ws.accept()
     q = events.hub.subscribe("presence")
     try:
         await ws.send_json({"type": "welcome", "channel": "presence",
                             "carries": ["presence_update [SIM] at bounded rate"]})
+        if since_id is not None:
+            for missed in events.hub.since("presence", after_id=since_id):
+                await ws.send_json(missed)
         # immediate snapshot so clients have current state on connect
         await ws.send_json({"type": "presence_update", "agents": presence.agents(), "sim": True})
         while True:

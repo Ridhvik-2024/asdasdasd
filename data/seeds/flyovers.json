@@ -1,0 +1,290 @@
+[
+ {
+  "id": "olympus-mons",
+  "name": "Olympus Mons Summit & Basal Scarp",
+  "region": "Tharsis",
+  "summary": "Orbit the 21.9 km shield volcano from the basal scarp to the nested summit calderas.",
+  "keyframes": [
+   {
+    "lat": 16.0,
+    "lon": 130.5,
+    "altitude_km": 2200,
+    "heading_deg": 35,
+    "pitch_deg": -42,
+    "dwell_s": 4.0,
+    "caption": "Approaching the western flank of Olympus Mons"
+   },
+   {
+    "lat": 18.65,
+    "lon": 133.8,
+    "altitude_km": 950,
+    "heading_deg": 80,
+    "pitch_deg": -55,
+    "dwell_s": 4.5,
+    "caption": "Crossing the towering basal scarp toward the 600 km-wide shield"
+   },
+   {
+    "lat": 18.65,
+    "lon": 133.8,
+    "altitude_km": 420,
+    "heading_deg": 185,
+    "pitch_deg": -68,
+    "dwell_s": 5.0,
+    "caption": "Summit calderas at ~21.9 km above the MOLA datum"
+   }
+  ],
+  "src": "USGS Gazetteer / MOLA MEGDR"
+ },
+ {
+  "id": "valles-marineris",
+  "name": "Valles Marineris Grand Canyon Run",
+  "region": "Coprates / Candor / Melas",
+  "summary": "Sweep along the 4,000 km tectonic rift system from Noctis Labyrinthus through Melas and Candor Chasmata.",
+  "keyframes": [
+   {
+    "lat": -6.8,
+    "lon": 258.0,
+    "altitude_km": 1600,
+    "heading_deg": 102,
+    "pitch_deg": -40,
+    "dwell_s": 4.0,
+    "caption": "Noctis Labyrinthus \u2014 fractured headwaters of the canyon system"
+   },
+   {
+    "lat": -7.5,
+    "lon": 276.0,
+    "altitude_km": 850,
+    "heading_deg": 105,
+    "pitch_deg": -48,
+    "dwell_s": 4.5,
+    "caption": "Ius & Tithonium Chasmata parallel fault troughs"
+   },
+   {
+    "lat": -10.3,
+    "lon": 289.5,
+    "altitude_km": 680,
+    "heading_deg": 95,
+    "pitch_deg": -52,
+    "dwell_s": 4.5,
+    "caption": "Melas & Candor Chasmata \u2014 >7 km deep with sulfate interior layered deposits"
+   },
+   {
+    "lat": -11.5,
+    "lon": 313.0,
+    "altitude_km": 1200,
+    "heading_deg": 75,
+    "pitch_deg": -45,
+    "dwell_s": 4.0,
+    "caption": "Eos & Capri Chasmata opening into the northern outflow channels"
+   }
+  ],
+  "src": "USGS Gazetteer / MOLA MEGDR"
+ },
+ {
+  "id": "hellas",
+  "name": "Hellas Planitia Impact Basin",
+  "region": "Southern Highlands",
+  "summary": "Descend across the 2,200 km rim into the deepest surface depression on Mars (~7 km below datum).",
+  "keyframes": [
+   {
+    "lat": -34.0,
+    "lon": 82.0,
+    "altitude_km": 2600,
+    "heading_deg": 210,
+    "pitch_deg": -45,
+    "dwell_s": 4.0,
+    "caption": "Dao Vallis and the northeastern Hellas highland rim"
+   },
+   {
+    "lat": -42.4,
+    "lon": 70.5,
+    "altitude_km": 1100,
+    "heading_deg": 240,
+    "pitch_deg": -60,
+    "dwell_s": 4.5,
+    "caption": "Hellas basin floor \u2014 highest surface atmospheric pressure on Mars (~11-12 mbar)"
+   },
+   {
+    "lat": -45.0,
+    "lon": 62.0,
+    "altitude_km": 1700,
+    "heading_deg": 300,
+    "pitch_deg": -48,
+    "dwell_s": 4.0,
+    "caption": "Western floor and surrounding ancient Noachian crust"
+   }
+  ],
+  "src": "USGS Gazetteer / MOLA MEGDR"
+ },
+ {
+  "id": "gale",
+  "name": "Gale Crater & Mount Sharp",
+  "region": "Aeolis / Curiosity",
+  "summary": "Fly from Bradbury Landing up the 5 km sedimentary stratigraphy of Aeolis Mons (Mount Sharp).",
+  "keyframes": [
+   {
+    "lat": -4.59,
+    "lon": 137.44,
+    "altitude_km": 750,
+    "heading_deg": 155,
+    "pitch_deg": -50,
+    "dwell_s": 4.0,
+    "caption": "Bradbury Landing & Yellowknife Bay ancient lakebed"
+   },
+   {
+    "lat": -5.08,
+    "lon": 137.85,
+    "altitude_km": 320,
+    "heading_deg": 180,
+    "pitch_deg": -58,
+    "dwell_s": 4.5,
+    "caption": "Aeolis Mons (Mt Sharp) \u2014 5 km central layered sedimentary mound"
+   },
+   {
+    "lat": -4.6,
+    "lon": 137.4,
+    "altitude_km": 220,
+    "heading_deg": 270,
+    "pitch_deg": -52,
+    "dwell_s": 4.5,
+    "caption": "Gediz Vallis Ridge debris-flow corridor explored by Curiosity"
+   }
+  ],
+  "src": "NASA/JPL-Caltech MSL / USGS Gazetteer"
+ },
+ {
+  "id": "jezero",
+  "name": "Jezero Crater & Western River Delta",
+  "region": "Isidis NW / Perseverance",
+  "summary": "Inspect Neretva Vallis inlet, the clay-rich delta front, and Perseverance's sample-collection corridor.",
+  "keyframes": [
+   {
+    "lat": 18.6,
+    "lon": 77.1,
+    "altitude_km": 680,
+    "heading_deg": 110,
+    "pitch_deg": -48,
+    "dwell_s": 4.0,
+    "caption": "Neretva Vallis river inlet breaching the western rim of Jezero"
+   },
+   {
+    "lat": 18.46,
+    "lon": 77.44,
+    "altitude_km": 220,
+    "heading_deg": 135,
+    "pitch_deg": -58,
+    "dwell_s": 4.5,
+    "caption": "Western river delta \u2014 phyllosilicate & carbonate target strata"
+   },
+   {
+    "lat": 18.4447,
+    "lon": 77.4508,
+    "altitude_km": 160,
+    "heading_deg": 240,
+    "pitch_deg": -62,
+    "dwell_s": 4.5,
+    "caption": "Octavia E. Butler Landing & Sol 911 Navcam 360 panorama site"
+   }
+  ],
+  "src": "NASA/JPL-Caltech Mars 2020 / USGS Gazetteer"
+ },
+ {
+  "id": "arsia-mons",
+  "name": "Arsia Mons & Volcanic Skylight Flanks",
+  "region": "Southern Tharsis",
+  "summary": "Tour the southernmost Tharsis shield volcano, its 110 km caldera, and lava-tube skylight candidate flanks.",
+  "keyframes": [
+   {
+    "lat": -9.2,
+    "lon": 238.5,
+    "altitude_km": 1400,
+    "heading_deg": 45,
+    "pitch_deg": -45,
+    "dwell_s": 4.0,
+    "caption": "Approaching Arsia Mons across the southern Tharsis lava plains"
+   },
+   {
+    "lat": -8.35,
+    "lon": 240.0,
+    "altitude_km": 520,
+    "heading_deg": 120,
+    "pitch_deg": -58,
+    "dwell_s": 4.5,
+    "caption": "110 km summit caldera and glacial fan deposits on the western flank"
+   },
+   {
+    "lat": -8.4,
+    "lon": 240.4,
+    "altitude_km": 320,
+    "heading_deg": 210,
+    "pitch_deg": -55,
+    "dwell_s": 4.5,
+    "caption": "Upper-flank pit crater / lava-tube shelter candidate zone"
+   }
+  ],
+  "src": "USGS Gazetteer / HiRISE"
+ },
+ {
+  "id": "grand-tour",
+  "name": "Grand Tour of Mars",
+  "region": "Global",
+  "summary": "Planetary highlight tour linking Jezero, Gale, Olympus Mons, Valles Marineris, Hellas, and Arcadia ice plains.",
+  "keyframes": [
+   {
+    "lat": 18.44,
+    "lon": 77.45,
+    "altitude_km": 1500,
+    "heading_deg": 0,
+    "pitch_deg": -55,
+    "dwell_s": 4.0,
+    "caption": "Jezero Crater \u2014 Perseverance rover & ancient river delta"
+   },
+   {
+    "lat": -4.6,
+    "lon": 137.4,
+    "altitude_km": 1500,
+    "heading_deg": 0,
+    "pitch_deg": -55,
+    "dwell_s": 4.0,
+    "caption": "Gale Crater \u2014 Curiosity rover & Mount Sharp"
+   },
+   {
+    "lat": 45.0,
+    "lon": 190.0,
+    "altitude_km": 2200,
+    "heading_deg": 0,
+    "pitch_deg": -50,
+    "dwell_s": 4.0,
+    "caption": "Arcadia Planitia \u2014 prime SWIM shallow subsurface water-ice plain"
+   },
+   {
+    "lat": 18.65,
+    "lon": 133.8,
+    "altitude_km": 1800,
+    "heading_deg": 0,
+    "pitch_deg": -52,
+    "dwell_s": 4.0,
+    "caption": "Olympus Mons \u2014 tallest planetary volcano in the Solar System"
+   },
+   {
+    "lat": -10.3,
+    "lon": 289.5,
+    "altitude_km": 2100,
+    "heading_deg": 0,
+    "pitch_deg": -50,
+    "dwell_s": 4.0,
+    "caption": "Valles Marineris \u2014 4,000 km equatorial canyon system"
+   },
+   {
+    "lat": -42.4,
+    "lon": 70.5,
+    "altitude_km": 2400,
+    "heading_deg": 0,
+    "pitch_deg": -52,
+    "dwell_s": 4.0,
+    "caption": "Hellas Planitia \u2014 deepest Martian impact basin"
+   }
+  ],
+  "src": "USGS Gazetteer / NASA / SWIM"
+ }
+]

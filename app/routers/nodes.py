@@ -90,12 +90,20 @@ def presence_agent(aid: str):
 
 @router.get("/presence/near")
 def presence_near(lat: float, lon: float, radius_km: float = 200):
-    return {"agents": presence.near(lat, lon, radius_km)}
+    try:
+        items = presence.near(lat, lon, radius_km)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"agents": items}
 
 
 @router.post("/presence/tick")
 def presence_tick(dt_sols: float = 1.0):
-    return {"agents": presence.tick(dt_sols),
+    try:
+        items = presence.tick(dt_sols)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"agents": items,
             "note": "advances the [SIM] presence simulation"}
 
 

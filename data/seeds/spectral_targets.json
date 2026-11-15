@@ -1,0 +1,162 @@
+[
+ {
+  "id": "st-jezero-carbonate",
+  "name": "Jezero marginal carbonates",
+  "lat": 18.42,
+  "lon": 77.45,
+  "mineral_class": "carbonate / olivine",
+  "instrument": "CRISM / Mastcam-Z",
+  "note": "Carbonate-bearing unit lining western Jezero crater rim, prioritized for Perseverance sampling.",
+  "citation": "Horgan et al. (2020), Icarus 339"
+ },
+ {
+  "id": "st-jezero-clay",
+  "name": "Jezero western delta phyllosilicates",
+  "lat": 18.46,
+  "lon": 77.44,
+  "mineral_class": "Fe/Mg-smectite",
+  "instrument": "CRISM",
+  "note": "Smectite-rich deltaic strata transported from Nili Fossae watershed.",
+  "citation": "Ehlmann et al. (2008), Nature Geoscience"
+ },
+ {
+  "id": "st-nili-carbonate",
+  "name": "Nili Fossae olivine-carbonate plains",
+  "lat": 21.8,
+  "lon": 74.5,
+  "mineral_class": "Mg-carbonate / olivine",
+  "instrument": "CRISM / OMEGA",
+  "note": "Largest exposed regional carbonate-olivine province on Mars.",
+  "citation": "Ehlmann et al. (2008), Science 322"
+ },
+ {
+  "id": "st-mawrth-clay",
+  "name": "Mawrth Vallis layered phyllosilicates",
+  "lat": 24.0,
+  "lon": 341.0,
+  "mineral_class": "Al-phyllosilicate / Fe-smectite",
+  "instrument": "OMEGA / CRISM",
+  "note": "Hundreds-of-meters-thick clay stratigraphy recording ancient pedogenesis/alteration.",
+  "citation": "Bishop et al. (2008), Science 321"
+ },
+ {
+  "id": "st-gale-sulfate",
+  "name": "Aeolis Mons (Mt Sharp) sulfate unit",
+  "lat": -5.08,
+  "lon": 137.85,
+  "mineral_class": "hydrated sulfates",
+  "instrument": "CRISM / ChemCam",
+  "note": "Transition from clay-bearing strata to sulfate-bearing strata recording drying climate.",
+  "citation": "Milliken et al. (2010), GRL 37"
+ },
+ {
+  "id": "st-candor-kieserite",
+  "name": "Candor Chasma interior sulfates",
+  "lat": -6.5,
+  "lon": 284.0,
+  "mineral_class": "polyhydrated & monohydrated sulfate",
+  "instrument": "OMEGA / CRISM",
+  "note": "Kieserite-bearing interior layered deposits inside central Valles Marineris.",
+  "citation": "Gendrin et al. (2005), Science 307"
+ },
+ {
+  "id": "st-meridiani-hematite",
+  "name": "Meridiani Planum crystalline hematite",
+  "lat": -1.95,
+  "lon": 354.47,
+  "mineral_class": "gray hematite / jarosite",
+  "instrument": "TES / Mini-TES / Mossbauer",
+  "note": "Gray hematite spherules over sulfate-rich sandstones mapped from orbit and ground.",
+  "citation": "Christensen et al. (2000), JGR; Squyres et al. (2004), Science"
+ },
+ {
+  "id": "st-syrtis-basalt",
+  "name": "Syrtis Major low-calcium/high-calcium pyroxene",
+  "lat": 8.4,
+  "lon": 69.5,
+  "mineral_class": "basalt / pyroxene",
+  "instrument": "TES / OMEGA",
+  "note": "Type locality for dark Martian basaltic shield volcanism.",
+  "citation": "Mustard et al. (2005), Science 307"
+ },
+ {
+  "id": "st-terra-sirenum-chloride",
+  "name": "Terra Sirenum chloride basin",
+  "lat": -31.5,
+  "lon": 206.5,
+  "mineral_class": "chloride salt",
+  "instrument": "THEMIS / CRISM",
+  "note": "Evaporite chloride deposits in southern highland basins.",
+  "citation": "Osterloo et al. (2010), JGR Planets"
+ },
+ {
+  "id": "st-columbus-alunite",
+  "name": "Columbus crater alunite & kaolinite",
+  "lat": -29.8,
+  "lon": 193.9,
+  "mineral_class": "alunite / Fe-Mg clays / sulfates",
+  "instrument": "CRISM",
+  "note": "Concentric paleolake shoreline mineralogy indicating acidic groundwater evaporation.",
+  "citation": "Wray et al. (2011), JGR Planets"
+ },
+ {
+  "id": "st-gusev-silica",
+  "name": "Home Plate opaline silica (Gusev)",
+  "lat": -14.64,
+  "lon": 175.53,
+  "mineral_class": "opaline silica",
+  "instrument": "Mini-TES / APXS",
+  "note": "High-purity (~90% SiO2) silica nodules interpreted as hydrothermal spring/fumarole deposits.",
+  "citation": "Squyres et al. (2008), Science 320"
+ },
+ {
+  "id": "st-noctis-silica",
+  "name": "Noctis Labyrinthus hydrated silica & iron sulfates",
+  "lat": -7.2,
+  "lon": 261.8,
+  "mineral_class": "hydrated silica / ferric sulfate",
+  "instrument": "CRISM",
+  "note": "Diverse hydrated minerals in western trough complexes.",
+  "citation": "Weitz et al. (2011), Geology 39"
+ },
+ {
+  "id": "st-arcadia-ice",
+  "name": "Arcadia Planitia shallow ice scarps",
+  "lat": 45.2,
+  "lon": 188.5,
+  "mineral_class": "H2O ice (subsurface/exposed)",
+  "instrument": "SHARAD / HiRISE / CRISM",
+  "note": "Mid-latitude buried ice sheets verified via SHARAD dielectric contrast and fresh impact exposures.",
+  "citation": "Bramson et al. (2015), GRL 42; Dundas et al. (2018), Science"
+ },
+ {
+  "id": "st-korolev-ice",
+  "name": "Korolev crater permanent water-ice mound",
+  "lat": 72.8,
+  "lon": 164.6,
+  "mineral_class": "H2O ice (surface)",
+  "instrument": "OMEGA / HRSC / SHARAD",
+  "note": "1.8 km-thick permanent water-ice cold-trap dome.",
+  "citation": "Brothers & Holt (2016), GRL 43"
+ },
+ {
+  "id": "st-holden-phyllo",
+  "name": "Holden crater lacustrine phyllosilicates",
+  "lat": -26.4,
+  "lon": 325.1,
+  "mineral_class": "Fe/Mg-phyllosilicate",
+  "instrument": "CRISM",
+  "note": "Light-toned bedded clay-bearing mudstones deposited after Uzboi Vallis breach.",
+  "citation": "Grant et al. (2008), Geology 36"
+ },
+ {
+  "id": "st-eberswalde-delta",
+  "name": "Eberswalde crater delta clays",
+  "lat": -23.9,
+  "lon": 326.7,
+  "mineral_class": "Fe/Mg-smectite",
+  "instrument": "CRISM / HiRISE",
+  "note": "Classic inverted meandering distributary delta containing smectite clays.",
+  "citation": "Milliken & Bish (2010), Phil. Mag."
+ }
+]

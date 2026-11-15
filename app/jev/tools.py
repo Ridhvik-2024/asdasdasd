@@ -4,7 +4,7 @@ import math
 
 from .. import environment, missions, nodes, resources, routing, seeds, terrain
 from ..integrity import SIM, prov
-from ..mars import hav_km
+from ..mars import hav_km, validate_coords
 
 T = terrain.engine()
 
@@ -66,13 +66,22 @@ TOOLS = [
                        "objective": {"type": "string"}}, ["name", "bbox"])},
     {"name": "plan_storm_response", "description": "Plan an evacuation/response: route with at least two reasoned stops (water cache, shelter pickup) plus a radiation estimate [SIM].",
      "parameters": _s({"lat": {"type": "number"}, "lon": {"type": "number"},
-                       "severity": {"type": "string"}, "destination": {"type": "array", "items": {"type": "number"}}}, ["lat", "lon"])},
-    {"name": "find_water", "description": "SWIM-consistent water-ice candidates near a point (certainty classes, depth-to-ice, stability).",
+                       "severity": {"type": "string"},
+                       "destination": {"oneOf": [
+                           {"type": "array", "items": {"type": "number"}},
+                           {"type": "object",
+                            "properties": {"lat": {"type": "number"}, "lon": {"type": "number"}},
+                            "required": ["lat", "lon"], "additionalProperties": False},
+                       ]}}, ["lat", "lon"])},
+    {"name": "find_water", "description": "SWIM-consistent water-ice candidates globally, near a point, or within a bbox (certainty classes, depth-to-ice, stability).",
      "parameters": _s({"lat": {"type": "number"}, "lon": {"type": "number"},
                        "radius_km": {"type": "number"},
+                       "bbox": {"type": "array", "items": {"type": "number"}},
                        "min_certainty": {"type": "string", "enum": ["A", "B", "C"]}})},
-    {"name": "find_shelter", "description": "Scored shelter candidates near a point (shielding, thermal, access, composite index).",
-     "parameters": _s({"lat": {"type": "number"}, "lon": {"type": "number"}, "radius_km": {"type": "number"}})},
+    {"name": "find_shelter", "description": "Scored shelter candidates globally, near a point, or within a bbox (shielding, thermal, access, composite index).",
+     "parameters": _s({"lat": {"type": "number"}, "lon": {"type": "number"},
+                       "radius_km": {"type": "number"},
+                       "bbox": {"type": "array", "items": {"type": "number"}}})},
     {"name": "assess_radiation", "description": "Estimate GCR + SEP dose for a stay (RAD-anchored) [SIM].",
      "parameters": _s({"lat": {"type": "number"}, "lon": {"type": "number"},
                        "duration_sols": {"type": "number"}, "shielding": {"type": "string", "enum": ["suit", "hab", "none"]}}, ["lat", "lon"])},
@@ -95,7 +104,12 @@ def _is_int(v):
 
 def _validate_schema_value(val, schema, path):
     """Recursive JSON-schema validator (types, bool/int separation, enums,
-    nested arrays, and additionalProperties=False)."""
+    oneOf, nested arrays, and additionalProperties=False)."""
+    if "oneOf" in (schema or {}):
+        errs = [_validate_schema_value(val, sub, path) for sub in schema["oneOf"]]
+        if all(e is not None for e in errs):
+            return "argument %s did not match allowed schema (%s)" % (path, "; ".join(errs))
+        return None
     tname = (schema or {}).get("type")
     if tname == "string":
         if not isinstance(val, str):
@@ -161,10 +175,18 @@ def _validate_semantics(name, args):
     for pair_key in ("from", "to", "destination"):
         if pair_key in args:
             pt = args[pair_key]
-            if len(pt) != 2:
-                return "argument %s must be [lat, lon]" % pair_key
-            if pt[0] < -90.0 or pt[0] > 90.0:
-                return "argument %s[0] (lat) must be in [-90, 90]" % pair_key
+            if isinstance(pt, dict):
+                if "lat" not in pt or "lon" not in pt:
+                    return "argument %s must contain lat and lon" % pair_key
+                if not _is_num(pt["lat"]) or not _is_num(pt["lon"]):
+                    return "argument %s lat/lon must be finite numbers" % pair_key
+                if pt["lat"] < -90.0 or pt["lat"] > 90.0:
+                    return "argument %s.lat must be in [-90, 90]" % pair_key
+            else:
+                if len(pt) != 2:
+                    return "argument %s must be [lat, lon]" % pair_key
+                if pt[0] < -90.0 or pt[0] > 90.0:
+                    return "argument %s[0] (lat) must be in [-90, 90]" % pair_key
     if "points" in args:
         pts = args["points"]
         if len(pts) < 2:
@@ -241,6 +263,13 @@ def _dispatch(name, a, ctx):
                 "provenance": prov(source=lay["source"], url=lay.get("url"))}
     if name == "compare_geological_layers":
         la, lb = seeds.layer(a["layer_a"]), seeds.layer(a["layer_b"])
+        missing = [lid for lid, obj in ((a["layer_a"], la), (a["layer_b"], lb)) if not obj]
+        if missing:
+            return {
+                "error": "unknown_layer",
+                "missing_layers": missing,
+                "detail": "unknown layer id(s): %s" % ", ".join(missing),
+            }
         stats = T.bbox_stats(tuple(a["bbox"])) if a.get("bbox") and len(a["bbox"]) == 4 else None
         return {"layer_a": la, "layer_b": lb, "bbox_stats": stats,
                 "provenance": prov(source="NAM layer comparison over demo terrain [SIM]")}
@@ -253,10 +282,14 @@ def _dispatch(name, a, ctx):
                                 note="production: MOLA 4 ppd + HiRISE DTMs")
         return st
     if name == "identify_hazards":
-        lat, lon = a.get("lat"), a.get("lon")
+        mc_center = (ctx.get("map_context") or {}).get("center") or {}
+        lat = a.get("lat")
+        lon = a.get("lon")
         if lat is None:
-            lat, lon = 0.0, 0.0
-        st = T.bbox_stats((lat - 1, lon - 1, lat + 1, lon + 1))
+            lat = mc_center.get("lat", 0.0)
+        if lon is None:
+            lon = mc_center.get("lon", 0.0)
+        st = T.bbox_stats((max(-90.0, lat - 1), lon - 1, min(90.0, lat + 1), lon + 1))
         hazards = []
         if st["max_slope_deg"] > 25:
             hazards.append("steep slopes up to %.1f deg [SIM]" % st["max_slope_deg"])
@@ -268,7 +301,9 @@ def _dispatch(name, a, ctx):
         return {"hazards": hazards or ["no major terrain hazards identified in this patch [SIM]"],
                 "terrain": st, "provenance": prov(source="NAM hazard identification [SIM]")}
     if name == "find_scientific_targets":
-        lat, lon = a["lat"], a["lon"]
+        mc_center = (ctx.get("map_context") or {}).get("center") or {}
+        lat = a.get("lat") if a.get("lat") is not None else mc_center.get("lat", 0.0)
+        lon = a.get("lon") if a.get("lon") is not None else mc_center.get("lon", 0.0)
         radius = a.get("radius_km", 500)
         targets = []
         for o in seeds.observations(lat=lat, lon=lon, radius_km=radius, limit=6):
@@ -301,9 +336,42 @@ def _dispatch(name, a, ctx):
                        + " ".join("Stop %d at (%.2f, %.2f): %s - %s." % (s["ord"], s["lat"], s["lon"], s["activity"], s["reason"] or "no reason stated")
                                   for s in m["stops"]))
         if m["routes"]:
-            r = m["routes"][0]
-            explanation += " Route: %.1f km, preset %s, est. %.1f sols traverse [SIM]." % (
-                r["length_km"] or 0, r["preset"], (r.get("stats") or {}).get("est_traverse_sols", 0))
+            r = m["routes"][-1]
+            st = r.get("stats") or {}
+            preset = r.get("preset") or st.get("cost_preset") or "balanced"
+            length_km = r.get("length_km")
+            if length_km is None:
+                length_km = st.get("length_km")
+            est_sols = st.get("est_traverse_sols")
+            is_degraded = (
+                r.get("status") == "degraded"
+                or st.get("status") == "degraded"
+                or bool(st.get("degraded"))
+            )
+            degraded_legs = st.get("degraded_legs") or 0
+            total_legs = st.get("total_legs") or 0
+            if is_degraded or length_km is None:
+                note = st.get("note") or r.get("note") or "no in-grid route found"
+                explanation += (
+                    " Route (degraded, preset %s): no complete in-grid route (%s) [SIM]."
+                    % (preset, note)
+                )
+            else:
+                parts = ["%.1f km" % length_km, "preset %s" % preset]
+                if est_sols is not None:
+                    parts.append("est. %.1f sols traverse" % est_sols)
+                else:
+                    leg_sols = [
+                        lg["est_sols"] for lg in (st.get("legs") or [])
+                        if isinstance(lg, dict) and lg.get("est_sols") is not None
+                    ]
+                    if leg_sols:
+                        parts.append("est. %.1f sols traverse" % sum(leg_sols))
+                    else:
+                        parts.append("est. traverse sols unavailable")
+                if degraded_legs > 0:
+                    parts.append("%d of %d leg(s) degraded" % (degraded_legs, total_legs))
+                explanation += " Route: %s [SIM]." % ", ".join(parts)
         return {"mission": m, "explanation": explanation + " " + SIM, "provenance": m["provenance"]}
     if name == "export_mission":
         kml = missions.kml(a["mission_id"])
@@ -324,15 +392,28 @@ def _dispatch(name, a, ctx):
         st = T.bbox_stats(tuple(bbox))
         return {"mission": m, "area_terrain": st, "provenance": m["provenance"]}
     if name == "plan_storm_response":
-        dest = a.get("destination") or None
+        raw_dest = a.get("destination")
+        dest = None
+        if raw_dest is not None:
+            if isinstance(raw_dest, dict):
+                dlat, dlon = validate_coords(raw_dest["lat"], raw_dest["lon"])
+            else:
+                dlat, dlon = validate_coords(raw_dest[0], raw_dest[1])
+            dest = {"lat": dlat, "lon": dlon}
         return environment.storm_response(a["lat"], a["lon"], destination=dest, severity=a.get("severity", "M"))
     if name == "find_water":
-        return {"candidates": resources.find_water(near={"lat": a.get("lat", 0), "lon": a.get("lon", 0)},
+        near = ({"lat": a["lat"], "lon": a["lon"]}
+                if (a.get("lat") is not None and a.get("lon") is not None) else None)
+        bbox = tuple(a["bbox"]) if a.get("bbox") is not None else None
+        return {"candidates": resources.find_water(bbox=bbox, near=near,
                                                    radius_km=a.get("radius_km", 1500),
                                                    min_certainty=a.get("min_certainty")),
                 "provenance": prov(source="SWIM-consistent candidates (swim.psi.edu)")}
     if name == "find_shelter":
-        return {"shelters": resources.find_shelter(near={"lat": a.get("lat", 0), "lon": a.get("lon", 0)},
+        near = ({"lat": a["lat"], "lon": a["lon"]}
+                if (a.get("lat") is not None and a.get("lon") is not None) else None)
+        bbox = tuple(a["bbox"]) if a.get("bbox") is not None else None
+        return {"shelters": resources.find_shelter(bbox=bbox, near=near,
                                                    radius_km=a.get("radius_km", 1500)),
                 "provenance": prov(source="NAM curated shelter set [SIM]")}
     if name == "assess_radiation":

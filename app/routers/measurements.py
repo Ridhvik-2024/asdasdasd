@@ -3,6 +3,7 @@ data source and resolution in the response (Phase 1 gate requirement)."""
 import csv
 import io
 import json
+import math
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
@@ -238,7 +239,7 @@ def terrain_download(min_lat: float, min_lon: float, max_lat: float, max_lon: fl
 @router.post("/stl")
 def stl_export(s: StlIn):
     vlat, vlon = _check_coords(s.lat, s.lon)
-    if s.radius_km <= 0 or s.vertical_scale <= 0:
+    if not math.isfinite(s.radius_km) or s.radius_km <= 0 or not math.isfinite(s.vertical_scale) or s.vertical_scale <= 0:
         raise HTTPException(400, "radius_km and vertical_scale must be > 0")
     data = T.ensure().stl_bytes(vlat, vlon, s.radius_km, s.vertical_scale, s.n)
     hdr = ("NAM terrain export [SIM]: demo grid + procedural detail; "

@@ -33,6 +33,11 @@ def init():
     _STATE["presence"] = _load("presence_agents.json")
     _STATE["hirise"] = _load("hirise_insets.json")
     _STATE["rover_regions"] = _load("rover_regions.json")
+    _STATE["orbiters"] = _load("orbiters.json")
+    _STATE["instruments"] = _load("instruments.json")
+    _STATE["spectral_targets"] = _load("spectral_targets.json")
+    _STATE["unavailable_sources"] = _load("unavailable_sources.json")
+    _STATE["flyovers"] = _load("flyovers.json")
     full = []
     if config.USGS_FULL_PATH.exists():
         try:
@@ -298,3 +303,63 @@ def rover_region(lat, lon):
         if b[0] <= lat <= b[2] and b[1] <= lon <= b[3]:
             return {"rover": rover, "site": r["site"]}
     return None
+
+
+def orbiters():
+    init()
+    return _STATE["orbiters"]
+
+
+def instruments(q=None, mission=None):
+    init()
+    out = []
+    for inst in _STATE["instruments"]:
+        if mission and mission.lower() not in (inst.get("mission") or "").lower():
+            continue
+        if q:
+            hay = f"{inst['name']} {inst['mission']} {inst['kind']} {inst['measures']}".lower()
+            if q.lower() not in hay:
+                continue
+        out.append(inst)
+    return out
+
+
+def spectral_targets(q=None, mineral=None, lat=None, lon=None, radius_km=600):
+    init()
+    out = []
+    for t in _STATE["spectral_targets"]:
+        t = _norm(t)
+        if mineral and mineral.lower() not in (t.get("mineral_class") or "").lower():
+            continue
+        if q:
+            hay = f"{t['name']} {t['mineral_class']} {t['instrument']} {t['note']}".lower()
+            if q.lower() not in hay:
+                continue
+        if lat is not None and lon is not None:
+            d = hav_km(lat, lon, t["lat"], t["lon"])
+            if d > radius_km:
+                continue
+            t["distance_km"] = round(d, 1)
+        out.append(t)
+    if lat is not None:
+        out.sort(key=lambda x: x.get("distance_km", 0))
+    return out
+
+
+def unavailable_sources():
+    init()
+    return _STATE["unavailable_sources"]
+
+
+def flyovers():
+    init()
+    return _STATE["flyovers"]
+
+
+def flyover(fid):
+    init()
+    for f in _STATE["flyovers"]:
+        if f["id"] == fid:
+            return f
+    return None
+
