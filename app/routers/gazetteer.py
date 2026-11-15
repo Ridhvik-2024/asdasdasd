@@ -15,7 +15,12 @@ router = APIRouter(tags=["gazetteer"])
 @router.get("/search")
 def search(q: str, type: str = None, limit: int = 12):
     t0 = time.perf_counter()
-    res = seeds.search(q, type_=type, limit=limit)
+    if len(q) > 200 or not q.strip():
+        raise HTTPException(400, "Enter a search query of 1–200 characters")
+    try:
+        res = seeds.search(q, type_=type, limit=max(1, min(limit, 100)))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     ms = round((time.perf_counter() - t0) * 1000, 2)
     return {"query": q, "count": len(res), "latency_ms": ms, "results": res,
             "provenance": prov(source="USGS Gazetteer of Planetary Nomenclature + NAM curated features + mission landing sites",

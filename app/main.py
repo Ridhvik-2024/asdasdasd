@@ -23,6 +23,7 @@ _STATELESS_POST_PREFIXES = (
     "/layers/compare",
     "/walkview/init",
     "/jev/explain",
+    "/jev/route-plan",
 )
 
 
@@ -122,3 +123,9 @@ if not _NASA_PUBLIC.exists():
     _NASA_PUBLIC = config.ROOT / "client" / "public" / "nasa"
 if _NASA_PUBLIC.exists():
     app.mount("/nasa", StaticFiles(directory=str(_NASA_PUBLIC)), name="nasa-assets")
+
+# Static assets for the primary NAM atlas and its locally bundled Cesium runtime.
+for _name in ("nam", "cesium"):
+    _directory = config.ROOT / "client" / "dist" / _name
+    if _directory.exists():
+        app.mount(f"/{_name}", StaticFiles(directory=str(_directory)), name=f"client-{_name}")

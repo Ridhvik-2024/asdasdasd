@@ -1,7 +1,8 @@
 FROM node:22-slim AS client-builder
 WORKDIR /build/client
 COPY client/package.json client/package-lock.json* ./
-RUN npm install --no-audit --no-fund
+COPY client/scripts ./scripts
+RUN npm ci --no-audit --no-fund
 COPY client/ ./
 RUN npm run build
 
@@ -11,7 +12,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 COPY scripts ./scripts
-COPY tests ./tests
 COPY data ./data
 COPY --from=client-builder /build/client/dist ./client/dist
 RUN python scripts/make_seeds.py && python scripts/make_demo_grid.py

@@ -9,3 +9,5 @@ data/cache/
 client/node_modules/
 client/dist/
 
+
+client/public/cesium/

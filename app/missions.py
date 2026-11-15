@@ -65,7 +65,7 @@ def get(mid):
         return None
     m = rows[0]
     stops = db.q("SELECT * FROM mission_stops WHERE mission_id=? ORDER BY ord, id", (mid,))
-    routes = db.q("SELECT id,preset,length_km,stats_json,created FROM routes WHERE mission_id=? ORDER BY rowid", (mid,))
+    routes = db.q("SELECT id,preset,length_km,stats_json,path_json,created FROM routes WHERE mission_id=? ORDER BY rowid", (mid,))
     return {
         "id": m["id"], "type": m["type"], "name": m["name"], "objective": m["objective"],
         "status": m["status"], "notes": m["notes"],
@@ -74,7 +74,8 @@ def get(mid):
         "stops": [{"ord": s["ord"], "lat": s["lat"], "lon": s["lon"],
                    "activity": s["activity"], "reason": s["reason"]} for s in stops],
         "routes": [{"id": r["id"], "preset": r["preset"], "length_km": r["length_km"],
-                    "stats": db.uj(r["stats_json"], {}), "created": r["created"]} for r in routes],
+                    "stats": db.uj(r["stats_json"], {}), "path": db.uj(r["path_json"], []),
+                    "created": r["created"]} for r in routes],
         "provenance": {"source": "NAM mission planner [SIM] - validated plan object with provenance"},
     }
 

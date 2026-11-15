@@ -1,0 +1,15 @@
+# Optional local model service. Use together with docker-compose.yml.
+services:
+  backend:
+    environment:
+      NAM_LLM_BASE_URL: http://model:11434/v1
+      NAM_LLM_MODEL: qwen2.5:1.5b
+  model:
+    image: ollama/ollama:latest
+    profiles: ["ai"]
+    volumes:
+      - nam_models:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  nam_models:
