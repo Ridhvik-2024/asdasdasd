@@ -13,8 +13,8 @@ USGS_FULL_PATH = DATA_DIR / "usgs_gazetteer_full.json"
 
 ALLOW_UPSTREAM = os.getenv("NAM_ALLOW_UPSTREAM", "1") == "1"
 TILE_TTL_H = float(os.getenv("NAM_TILE_TTL_HOURS", "24"))
-LLM_BASE_URL = os.getenv("NAM_LLM_BASE_URL", "").rstrip("/")
-LLM_MODEL = os.getenv("NAM_LLM_MODEL", "local-3b-gguf-q4km")
+LLM_BASE_URL = os.getenv("NAM_LLM_BASE_URL", "http://127.0.0.1:11434/v1").rstrip("/")
+LLM_MODEL = os.getenv("NAM_LLM_MODEL", "qwen2.5:1.5b") or "qwen2.5:1.5b"
 CTX_TILE_TEMPLATE = os.getenv(
     "NAM_CTX_TILE_TEMPLATE",
     "https://murray-lab.caltech.edu/CTX/V01/TileData/Z{z}/{y}_{x}.jpg")

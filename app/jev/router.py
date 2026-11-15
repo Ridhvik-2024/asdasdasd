@@ -68,10 +68,55 @@ class Plan:
         self.intents.append({"action": "fly_to", "lat": lat, "lon": lon, "label": label})
 
 
+def is_resource_route_request(message):
+    text = (message or "").lower()
+    return bool(re.search(r"\b(route|travel|navigate|journey|drive|traverse|plan|get|go)\b", text)
+                and re.search(r"\bfrom\b.+\bto\b", text))
+
+
+def _route_preference(message):
+    text = message.lower()
+    water = bool(re.search(r"\bwater\b|\bice\b", text))
+    shelter = bool(re.search(r"\bshelters?\b", text))
+    excluded_water = bool(re.search(r"\b(?:without|no|avoid|avoiding)\s+(?:any\s+)?(?:water|ice)\b", text))
+    excluded_shelter = bool(re.search(r"\b(?:without|no|avoid|avoiding)\s+(?:any\s+)?shelters?\b", text))
+    if re.search(r"\b(?:without|no|avoid|avoiding)\s+(?:any\s+)?(?:water|ice)\s+(?:and|or)\s+shelters?\b", text):
+        excluded_water = excluded_shelter = True
+    if re.search(r"\b(?:without|no|avoid|avoiding)\s+(?:any\s+)?shelters?\s+(?:and|or)\s+(?:water|ice)\b", text):
+        excluded_water = excluded_shelter = True
+    if not water and not shelter:
+        return "both"
+    wanted_water, wanted_shelter = water and not excluded_water, shelter and not excluded_shelter
+    if wanted_water and wanted_shelter: return "both"
+    if wanted_water: return "water"
+    if wanted_shelter: return "shelter"
+    return "none"
+
+
+def summarize_resource_route(route):
+    if route.get("error"):
+        return "Could not plan the route: " + str(route.get("detail") or route["error"])
+    if route.get("status") != "ok":
+        return "No complete terrain route could be calculated [SIM]. " + " ".join(route.get("warnings", []))
+    stops = " → ".join(f"{s['name']} ({s['kind']})" for s in route["stops"])
+    screen = route["resource_screen"]
+    return (f"Advisory route [SIM]: {stops}. Distance {route['total_km']} km; "
+            f"estimated {route['estimated_sols']} sols at {route['speed_km_sol']} km/sol; "
+            f"estimated radiation {route['radiation']['total_msv']} mSv [SIM]. "
+            f"Resource detour screening: {screen['estimated_extra_km']} km (limit {screen['limit_km']} km). "
+            + " ".join(route.get("warnings", [])))
+
+
 def plan_for(message, ctx=None):
     """Return (plan, composer_fn). Composer turns tool results into a cited reply."""
     msg = (message or "").lower().strip()
     p = Plan()
+
+    # Route planning remains grounded even when a local model is configured:
+    # the model extracts names inside this tool; the backend computes the route.
+    if is_resource_route_request(message):
+        p.add("plan_resource_route", message=message, preference=_route_preference(message))
+        return p, lambda results: summarize_resource_route(results.get("plan_resource_route", {}))
 
     # 1. take me to X / fly to X / go to X
     m = re.search(r"(?:take me to|fly to|go to|navigate to|zoom to)\s+(.+)", msg)

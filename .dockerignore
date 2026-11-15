@@ -1,0 +1,11 @@
+.git
+.venv
+.env
+**/__pycache__
+.pytest_cache
+client/node_modules
+client/dist
+client/public/cesium
+data/nam.db*
+data/cache
+NAM (1).zip

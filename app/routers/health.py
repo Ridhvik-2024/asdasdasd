@@ -47,5 +47,5 @@ def root(request: Request):
         "docs": "/docs",
         "openapi": "/openapi.json (OpenAPI 3.1)",
         "health": "/health",
-        "client": "client/ (React + TypeScript + Vite + Three.js)",
+        "client": "NAM atlas (client/), served at / for browsers",
     }

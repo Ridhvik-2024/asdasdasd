@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="NAM — Navigation Assistance for Mars">
+  <defs>
+    <radialGradient id="nam-mars" cx="34%" cy="30%" r="82%">
+      <stop offset="0%" stop-color="#EBAF7E"/>
+      <stop offset="38%" stop-color="#C66B45"/>
+      <stop offset="78%" stop-color="#8a3d24"/>
+      <stop offset="100%" stop-color="#542516"/>
+    </radialGradient>
+    <linearGradient id="nam-route" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#EAE8E3" stop-opacity=".55"/>
+      <stop offset="55%" stop-color="#EAE8E3" stop-opacity=".95"/>
+      <stop offset="100%" stop-color="#D6A17C"/>
+    </linearGradient>
+  </defs>
+  <circle cx="24" cy="24" r="19.5" fill="url(#nam-mars)"/>
+  <path d="M24 4.5a19.5 19.5 0 0 1 13.8 33.3" fill="none" stroke="#D6A17C" stroke-opacity=".5" stroke-width="1.1" stroke-linecap="round"/>
+  <path d="M10 33 Q 22 18 36 14.5" fill="none" stroke="url(#nam-route)" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="0.1 4.2"/>
+  <circle cx="10" cy="33" r="2.4" fill="none" stroke="#EAE8E3" stroke-width="1.3"/>
+  <circle cx="36" cy="14.5" r="2.9" fill="#F1EEE5"/>
+  <circle cx="36" cy="14.5" r="5.4" fill="none" stroke="#D6A17C" stroke-opacity=".45" stroke-width="1"/>
+</svg>

@@ -1,4 +1,4 @@
-"""The full 24-tool JEV registry with typed JSON schemas and fail-closed
+"""The JEV tool registry with typed JSON schemas and fail-closed
 argument + semantic validation. Deterministic services compute; the model decides."""
 import math
 
@@ -90,6 +90,19 @@ TOOLS = [
                        "scale_or_class": {"type": "string"},
                        "lat": {"type": "number"}, "lon": {"type": "number"}}, ["kind"])},
 ]
+
+# Route decisions are deterministic; the configured model can extract literal
+# place names but cannot supply route geometry or resource coordinates.
+TOOLS.append({
+    "name": "plan_resource_route",
+    "description": "Plan an advisory Mars route between named places, considering water and shelter candidates, synthetic terrain, and radiation [SIM].",
+    "parameters": _s({"message": {"type": "string"},
+                      "places": {"type": "array", "items": {"type": "string"}},
+                      "preference": {"type": "string", "enum": ["none", "water", "shelter", "both"]},
+                      "max_detour_km": {"type": "number"},
+                      "speed_km_sol": {"type": "number"},
+                      "preset": {"type": "string", "enum": ["balanced", "terrain", "speed"]}}),
+})
 
 TOOL_INDEX = {t["name"]: t for t in TOOLS}
 
@@ -317,6 +330,14 @@ def _dispatch(name, a, ctx):
     if name == "create_mission":
         m = missions.create(a["type"], a["name"], a.get("objective"), a.get("stops"))
         return {"mission": m, "provenance": m["provenance"]}
+    if name == "plan_resource_route":
+        from . import resource_route
+        return resource_route.plan(places=a.get("places"), message=a.get("message", ""),
+                                   preference=a.get("preference", "both"),
+                                   max_detour_km=a.get("max_detour_km", 250),
+                                   speed_km_sol=a.get("speed_km_sol", 0.12),
+                                   preset=a.get("preset", "balanced"),
+                                   use_model=bool(a.get("message")))
     if name == "generate_route":
         r = routing.plan_route(a["from"][0], a["from"][1], a["to"][0], a["to"][1], a.get("preset", "balanced"))
         return r

@@ -148,15 +148,71 @@ def _tool_list():
 def benchmark():
     import time
     t0 = time.perf_counter()
-    ok = None
+    reachable = None
+    status = "disabled"
     if available():
+        status = "unavailable"
         try:
-            with httpx.Client(timeout=8.0) as cl:
+            with httpx.Client(timeout=3.0) as cl:
                 r = cl.get(config.LLM_BASE_URL + "/models")
-                ok = r.status_code == 200
+                r.raise_for_status()
+                reachable = True
+                data = r.json().get("data")
+                if isinstance(data, list):
+                    names = {str(item.get("id", "")) for item in data if isinstance(item, dict)}
+                    status = "ready" if config.LLM_MODEL in names else "missing_model"
+                else:
+                    status = "unknown"
         except Exception:
-            ok = False
-    return {"adapter": describe(), "endpoint_reachable": ok,
+            reachable = False
+    return {"adapter": describe(), "endpoint_reachable": reachable, "model_status": status,
             "probe_ms": round((time.perf_counter() - t0) * 1000, 1),
-            "note": "with no endpoint configured, the deterministic router guarantees "
-                    "sub-10 s first response with zero GPU"}
+            "note": "A local model interprets requests only when the model server and selected model are available."}
+
+
+def extract_route_places(message, timeout_s=60.0):
+    """Use the configured model only to extract literal place names from a request.
+
+    Coordinates, resource locations, and route calculations never come from the
+    model. Reject invented/non-literal names and malformed output; the caller
+    can fall back to the explicit structured input or a simple parser.
+    """
+    if not available() or not isinstance(message, str) or not message.strip():
+        return None
+    body = {
+        "model": config.LLM_MODEL,
+        "messages": [
+            {"role": "system", "content": (
+                "Extract the ordered departure, intermediate destinations, and final destination "
+                "from the user's Mars route request. Return only JSON: {\"places\":[\"...\",\"...\"]}. "
+                "Copy each place name exactly from the input; never invent names or coordinates. "
+                "Ignore water, shelter and route preferences. If fewer than two places are "
+                "explicitly named, return an empty places array. At most five places.")},
+            {"role": "user", "content": message},
+        ],
+        "temperature": 0,
+        "max_tokens": 200,
+        "response_format": {"type": "json_object"},
+    }
+    try:
+        with httpx.Client(timeout=timeout_s) as client:
+            response = client.post(config.LLM_BASE_URL + "/chat/completions", json=body)
+            response.raise_for_status()
+            text = response.json()["choices"][0]["message"]["content"]
+        parsed = json.loads(text)
+        places = parsed.get("places") if isinstance(parsed, dict) else None
+        if not isinstance(places, list) or not 2 <= len(places) <= 5:
+            return None
+        if not all(isinstance(p, str) and 1 <= len(p.strip()) <= 120 for p in places):
+            return None
+        # Names must occur in the input in the same order. The model cannot
+        # invent a stop or silently reverse an explicitly ordered journey.
+        cursor = 0
+        for place in places:
+            position = message.casefold().find(place.strip().casefold(), cursor)
+            if position < 0:
+                return None
+            cursor = position + len(place.strip())
+        return [p.strip() for p in places]
+    except (httpx.HTTPError, ValueError, TypeError, KeyError, IndexError):
+        return None

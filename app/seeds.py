@@ -5,7 +5,7 @@ import re
 from functools import lru_cache
 
 from . import config
-from .mars import hav_km, norm_lat, norm_lon
+from .mars import hav_km, norm_lat, norm_lon, validate_coords
 
 _STATE = {}
 
@@ -45,6 +45,19 @@ def init():
         except Exception:
             full = []
     _STATE["usgs_full"] = full
+    # For a uniquely named match, use the official catalogue center and size
+    # rather than the approximate (and occasionally incorrect) curated values.
+    official = {}
+    for feature in full:
+        official.setdefault(feature.get("name", "").casefold(), []).append(feature)
+    for feature in _STATE["features"]:
+        matches = official.get(feature.get("name", "").casefold(), [])
+        if len(matches) == 1:
+            entry = matches[0]
+            for key in ("lat", "lon", "diameter_km", "url", "approval", "approval_date"):
+                if key in entry:
+                    feature[key] = entry[key]
+            feature["src"] = entry.get("src", feature.get("src"))
     return _STATE
 
 
@@ -110,17 +123,19 @@ def search(qq, type_=None, limit=12):
     out = []
     m = COORD_RE.match(qq or "")
     if m:
-        lat, lon = norm_lat(float(m.group(1))), norm_lon(float(m.group(2)))
+        lat, lon = validate_coords(float(m.group(1)), float(m.group(2)))
         near = nearest(lat, lon, radius_km=300, limit=limit)
         return [{"kind": "coordinates", "lat": lat, "lon": lon,
                  "nearest": near,
                  "provenance": {"source": "coordinate query, nearest features from gazetteer"}}]
+    # Accept the common "Gale Crater" form for catalogue entries named "Gale".
+    without_crater = re.sub(r"\s+crater$", "", q0).strip()
     for f in features():
         name = f.get("name", "").lower()
         if type_ and type_.lower() not in (f.get("type") or "").lower():
             continue
         score = 0.0
-        if q0 == name:
+        if q0 == name or (without_crater != q0 and without_crater == name and "crater" in (f.get("type") or "").lower()):
             score = 1.0
         elif q0 and q0 in name:
             score = 0.92 - 0.002 * abs(len(name) - len(q0))
@@ -139,7 +154,19 @@ def search(qq, type_=None, limit=12):
         if q0 and (q0 in name or q0 in ls.get("mission", "").lower()):
             out.append((0.95, dict(_norm(ls), kind="landing_site")))
     out.sort(key=lambda t: -t[0])
-    return [{"score": round(s, 3), **f} for s, f in out[:limit]]
+    # Suppress exact curated/USGS duplicates without hiding genuinely distinct
+    # named features or mission sites sharing a name.
+    unique = []
+    for score, feature in out:
+        duplicate = any(feature.get("name", "").casefold() == other.get("name", "").casefold()
+                        and feature.get("kind") != "landing_site" and other.get("kind") != "landing_site"
+                        and hav_km(feature["lat"], feature["lon"], other["lat"], other["lon"]) < 1
+                        for _, other in unique)
+        if not duplicate:
+            unique.append((score, feature))
+        if len(unique) >= max(1, min(limit, 100)):
+            break
+    return [{"score": round(score, 3), **feature} for score, feature in unique]
 
 
 def by_id(fid):

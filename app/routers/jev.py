@@ -1,14 +1,14 @@
-"""JEV endpoints: 24-tool registry, SSE chat with tool-activity trace,
+"""JEV endpoints: tool registry, SSE chat with tool-activity trace,
 explain-view, benchmark."""
 import asyncio
 import json
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from .. import db
-from ..jev import llm, router as jev_router
+from ..jev import llm, resource_route, router as jev_router
 from ..jev.tools import TOOLS, run_tool
 
 router = APIRouter(prefix="/jev", tags=["jev"])
@@ -17,7 +17,30 @@ router = APIRouter(prefix="/jev", tags=["jev"])
 @router.get("/tools")
 def tools_list():
     return {"count": len(TOOLS), "tools": TOOLS,
-            "note": "16 tools carried from NAM v1 + 8 Phase 3 tools; JSON-schema-constrained, fail closed"}
+            "note": "JSON-schema-constrained tools, including the resource-aware route planner"}
+
+
+class RoutePlanIn(BaseModel):
+    message: str = ""
+    places: list = []
+    resource_preference: str = "both"
+    max_detour_km: float = 250.0
+    speed_km_sol: float = 0.12
+    preset: str = "balanced"
+    use_model: bool = True
+
+
+@router.post("/route-plan")
+def resource_route_plan(request: RoutePlanIn):
+    """Plan an advisory [SIM] route; the local model only extracts place names."""
+    try:
+        return resource_route.plan(places=request.places, message=request.message,
+                                   preference=request.resource_preference,
+                                   max_detour_km=request.max_detour_km,
+                                   speed_km_sol=request.speed_km_sol,
+                                   preset=request.preset, use_model=request.use_model)
+    except (ValueError, TypeError, KeyError) as exc:
+        raise HTTPException(400, str(exc)) from exc
 
 
 class ChatIn(BaseModel):
@@ -44,11 +67,16 @@ async def chat(c: ChatIn):
     async def make_gen():
         nonlocal plan, composer, llm_planned
         yield _sse({"type": "start", "engine": llm.describe()})
-        planned = llm.plan_with_llm(c.message, c.map_context)
+        planned = None if jev_router.is_resource_route_request(c.message) else await asyncio.to_thread(llm.plan_with_llm, c.message, c.map_context)
         invocations = []
         if planned and planned.get("steps"):
             llm_planned = True
-            steps = planned["steps"]
+            # A model tool call cannot introduce route names, coordinates or
+            # assumptions of its own. Re-extract only from the user's text.
+            steps = [({**step, "args": {"message": c.message,
+                                      "preference": jev_router._route_preference(c.message)}}
+                      if step.get("tool") == "plan_resource_route" else step)
+                     for step in planned["steps"]]
         else:
             plan, composer = jev_router.plan_for(c.message, c.map_context)
             steps = plan.steps
@@ -56,12 +84,17 @@ async def chat(c: ChatIn):
         # id + its own arguments) instead of results[tool] = res, which let a
         # repeated execution overwrite the first result. A failing step records
         # its error and never blocks independent subsequent tools.
-        for ev in execute_steps(steps, {"map_context": c.map_context}, trace=invocations):
+        iterator = iter(execute_steps(steps, {"map_context": c.map_context}, trace=invocations))
+        sentinel = object()
+        while True:
+            ev = await asyncio.to_thread(next, iterator, sentinel)
+            if ev is sentinel:
+                break
             yield _sse(ev)
         view = _build_view(invocations)
         failure_note = _failure_note(invocations)
         if llm_planned:
-            answer = llm.chat_with_llm(c.message, c.map_context, _llm_trace(invocations)) or \
+            answer = await asyncio.to_thread(llm.chat_with_llm, c.message, c.map_context, _llm_trace(invocations)) or \
                 "The local model could not produce an answer; tool outputs above are grounded and complete."
             citations = ["tool invocations: " + ", ".join(inv["id"] for inv in invocations)]
             intents = planned.get("intents", [])
@@ -69,6 +102,16 @@ async def chat(c: ChatIn):
             answer = composer(view) or ""
             citations = [s for s in _citations_from(invocations)]
             intents = plan.intents
+        route_invocation = next((inv for inv in invocations if inv["tool"] == "plan_resource_route" and inv["ok"]), None)
+        route_engine = None
+        if route_invocation:
+            route = route_invocation["result"]
+            # Never allow generated prose to invent route metrics or omit warnings.
+            answer = jev_router.summarize_resource_route(route)
+            route_engine = route.get("engine")
+            citations = ["NAM synthetic DEM and A* [SIM]", "SWIM-consistent water candidates [SIM]", "NAM shelter and radiation models [SIM]"]
+            if route.get("status") == "ok" and len(route.get("path", [])) >= 2:
+                intents = list(intents) + [{"action": "show_route", "path": route["path"], "stops": route["stops"]}]
         if failure_note:
             # partial failure: the answer must honestly acknowledge missing information
             answer = "%s\n%s" % (answer, failure_note)
@@ -83,7 +126,7 @@ async def chat(c: ChatIn):
             "reply": answer,
             "citations": citations,
             "intents": intents,
-            "engine": "local-llm" if llm_planned else "deterministic-router",
+            "engine": route_engine or ("local-llm" if llm_planned else "deterministic-router"),
             "invocations": [
                 {"id": inv["id"], "tool": inv["tool"], "args": inv["args"],
                  "ok": inv["ok"],

@@ -1,13 +1,274 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NAM v2 — Google Earth for Mars</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23c85a32'/%3E%3Ccircle cx='24' cy='24' r='8' fill='%23e28a56' opacity='.6'/%3E%3Ccircle cx='42' cy='38' r='10' fill='%237c2d19' opacity='.5'/%3E%3C/svg%3E" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#101114" />
+  <meta name="description" content="NAM — Navigation Assistance for Mars. Explore the Red Planet with NASA/JPL planetary imagery and mission data." />
+  <title>NAM — Navigation Assistance for Mars</title>
+  <meta name="description" content="A planetary atlas for exploring Mars through NASA and JPL imagery." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Orbitron:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <link rel="icon" type="image/svg+xml" href="/nam/assets/nam-logo.svg" />
+  <link rel="stylesheet" href="/cesium/Widgets/widgets.css" />
+  <link rel="stylesheet" href="/nam/styles.css?v=20261115-6" />
+  <script>
+    window.CESIUM_BASE_URL = "/cesium/";
+  </script>
+  <script src="/cesium/Cesium.js"></script>
+  <script src="/nam/backend-tools.js?v=20261115-4" defer></script>
+  <script src="/nam/app.js?v=20261115-6" defer></script>
+  <script src="/nam/home.js" defer></script>
+</head>
+<body>
+  <!-- Shared NAM logo mark (referenced with <use> in both headers) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <radialGradient id="nam-mars" cx="34%" cy="30%" r="82%">
+        <stop offset="0%" stop-color="#EBAF7E"/>
+        <stop offset="38%" stop-color="#C66B45"/>
+        <stop offset="78%" stop-color="#8a3d24"/>
+        <stop offset="100%" stop-color="#542516"/>
+      </radialGradient>
+      <linearGradient id="nam-route" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0%" stop-color="#EAE8E3" stop-opacity=".55"/>
+        <stop offset="55%" stop-color="#EAE8E3" stop-opacity=".95"/>
+        <stop offset="100%" stop-color="#D6A17C"/>
+      </linearGradient>
+    </defs>
+    <symbol id="nam-logo" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="19.5" fill="url(#nam-mars)"/>
+      <path d="M24 4.5a19.5 19.5 0 0 1 13.8 33.3" fill="none" stroke="#D6A17C" stroke-opacity=".5" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M10 33 Q 22 18 36 14.5" fill="none" stroke="url(#nam-route)" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="0.1 4.2"/>
+      <circle cx="10" cy="33" r="2.4" fill="none" stroke="#EAE8E3" stroke-width="1.3"/>
+      <circle cx="36" cy="14.5" r="2.9" fill="#F1EEE5"/>
+      <circle cx="36" cy="14.5" r="5.4" fill="none" stroke="#D6A17C" stroke-opacity=".45" stroke-width="1"/>
+    </symbol>
+  </svg>
+
+  <main class="map-app">
+    <section class="mars-home" id="mars-home" aria-label="NAM introduction">
+      <canvas class="home-stars" id="home-stars" aria-hidden="true"></canvas>
+      <div class="home-grain" aria-hidden="true"></div>
+      <header class="home-header">
+        <a class="home-brand" href="#" aria-label="NAM — Navigation Assistance for Mars">
+          <svg class="brand-logo" aria-hidden="true"><use href="#nam-logo"></use></svg>
+          <span class="brand-word">NAM</span>
+        </a>
+        <span class="home-index">PLANETARY ATLAS <b>·</b> 01 / 04</span>
+      </header>
+      <div class="home-copy">
+        <p class="home-kicker"><span></span> NAVIGATION ASSISTANCE FOR MARS</p>
+        <h1>THE RED<br /><em>FRONTIER.</em></h1>
+        <p class="home-description">A new perspective on our neighbouring world. Explore the terrain, read the surface, and chart a course across the fourth planet from the Sun.</p>
+        <button class="enter-atlas" id="enter-atlas" type="button">
+          <span>ENTER THE ATLAS</span><span class="enter-arrow" aria-hidden="true">↗</span>
+        </button>
+        <div class="home-footnote"><span>01</span><span>OLYMPUS MONS · VALLES MARINERIS · JEZERO</span></div>
+      </div>
+      <button class="planet-launch" id="planet-launch" type="button" aria-label="Enter the Mars atlas by selecting the planet">
+        <span class="hero-planet" id="hero-planet" aria-hidden="true"><span class="planet-shadow"></span></span>
+        <canvas class="mars-webgl" id="mars-webgl" aria-hidden="true"></canvas>
+        <span class="planet-hint" aria-hidden="true">SCROLL TO INSPECT · SELECT TO ENTER</span>
+      </button>
+      <div class="home-coordinates" aria-hidden="true"><span>14° 32′ N</span><span>65° 18′ E</span><span class="coord-divider"></span><span>−63 °C AVG.</span></div>
+      <div class="home-bottom"><span>AN OPEN WINDOW INTO ANOTHER WORLD</span><span>SCROLL / EXPLORE <b>↗</b></span></div>
+      <div class="zoom-flash" aria-hidden="true"></div>
+    </section>
+    <div id="cesiumContainer" aria-label="Interactive three-dimensional globe of Mars"></div>
+
+    <a class="brand" href="#" aria-label="NAM — Navigation Assistance for Mars" title="NAM">
+      <svg class="brand-mark" aria-hidden="true"><use href="#nam-logo"></use></svg>
+      <span class="brand-name">NAM</span>
+    </a>
+
+    <div class="top-tools" aria-label="Map tools">
+      <button class="icon-button" id="search-toggle" type="button" aria-label="Search location" aria-expanded="false" data-tip="Search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 4.4 4.4"/></svg>
+      </button>
+      <button class="icon-button" id="layers-toggle" type="button" aria-label="Map layers" aria-expanded="false" data-tip="Layers">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></svg>
+      </button>
+      <button class="icon-button" id="data-toggle" type="button" aria-label="Data catalogue" aria-expanded="false" data-tip="Data catalogue">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"/><path d="M4 6v14.5A2.5 2.5 0 0 1 6.5 18H20M8 7h8M8 11h8"/></svg>
+      </button>
+      <button class="icon-button" id="download-view" type="button" aria-label="Save map image" data-tip="Save map image">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M4 16v4h16v-4"/></svg>
+      </button>
+      <button class="icon-button" id="about-toggle" type="button" aria-label="About NAM" data-tip="About">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg>
+      </button>
+    </div>
+
+    <nav class="tool-rail" aria-label="Map actions">
+      <button class="icon-button" id="operations-toggle" type="button" aria-label="Science and mission tools" aria-expanded="false" data-tip="Science &amp; mission tools"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h8M8 17h4"/></svg></button>
+      <button class="icon-button" id="places-toggle" type="button" aria-label="Places" aria-expanded="false" data-tip="Places">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.2"/></svg>
+      </button>
+      <button class="icon-button" id="route-mode" type="button" aria-label="Plan a traverse" aria-pressed="false" data-tip="Plan a traverse">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 17c2-1 1-4 3-5s4 0 5-3"/></svg>
+      </button>
+      <span class="rail-separator" aria-hidden="true"></span>
+      <button class="icon-button" id="home-view" type="button" aria-label="Return to Mars overview" data-tip="Overview">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9h13v-9M9.5 19v-5.5h5V19"/></svg>
+      </button>
+    </nav>
+
+    <div class="map-status" aria-live="polite">
+      <span class="status-dot" id="connection-dot"></span>
+      <span id="connection-label">Connecting to Mars Trek</span>
+    </div>
+
+    <div class="map-readout"><span id="region-label">Global view</span><span class="readout-separator"> · </span><span id="coordinate-readout">Mars</span></div>
+    <div class="map-credit" id="map-credit">Viking MDIM 2.1 · NASA / JPL / USGS</div>
+
+    <div class="zoom-tools" aria-label="Zoom controls">
+      <button class="icon-button" id="zoom-in" type="button" aria-label="Zoom in" data-tip="Zoom in">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <button class="icon-button" id="zoom-out" type="button" aria-label="Zoom out" data-tip="Zoom out">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+      </button>
+    </div>
+
+    <form class="floating-search hidden" id="search-panel" role="search">
+      <label class="sr-only" for="location-search">Search a place or coordinates</label>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 4.4 4.4"/></svg>
+      <input id="location-search" type="search" placeholder="Place, mission, or lat, lon" autocomplete="off" maxlength="200" />
+      <button class="search-submit" type="submit" aria-label="Search">↵</button>
+    </form>
+
+    <aside class="floating-panel hidden" id="operations-panel" aria-label="Science and mission tools">
+      <div class="panel-heading"><div><span class="panel-eyebrow">Explore</span><h2>Field tools</h2></div><button class="close-button" data-close="operations-panel" type="button" aria-label="Close tools">×</button></div>
+      <div class="panel-scroll operations-list">
+        <p class="inspector-note">Connected to NAM's science and mission services. Estimates and simulations are advisory [SIM].</p>
+        <button type="button" data-service="measure">Measurements &amp; terrain <span>›</span></button>
+        <button type="button" data-service="science">Science &amp; discoveries <span>›</span></button>
+        <button type="button" data-service="panoramas">Rover panoramas <span>›</span></button>
+        <button type="button" data-service="missions">Missions &amp; routes <span>›</span></button>
+        <button type="button" data-service="environment">Environment &amp; resources <span>›</span></button>
+        <button type="button" data-service="bookmarks">Saved bookmarks <span>›</span></button>
+        <button type="button" data-service="ai-route">JEV resource route planner <span>›</span></button>
+        <button type="button" data-service="jev">JEV assistant <span>›</span></button>
+      </div>
+    </aside>
+    <aside class="floating-panel hidden" id="service-panel" aria-label="Field tool">
+      <div class="panel-heading"><div><span class="panel-eyebrow">Field tools</span><h2 id="service-title">Tools</h2></div><button class="close-button" data-close="service-panel" type="button" aria-label="Close tool">×</button></div>
+      <div class="panel-scroll" id="service-content"></div>
+    </aside>
+    <aside class="floating-panel hidden search-results-panel" id="search-results" aria-live="polite"><div class="panel-heading"><div><span class="panel-eyebrow">USGS &amp; mission locations</span><h2>Search results</h2></div><button class="close-button" id="close-results" type="button" aria-label="Close results">×</button></div><div class="panel-scroll"><p class="search-help">Select a result to mark its catalogue center. Try “Gale Crater” or enter coordinates.</p><div id="search-results-list"></div></div></aside>
+
+    <aside class="floating-panel hidden" id="layers-panel" aria-label="Map layers">
+      <div class="panel-heading">
+        <div><span class="panel-eyebrow">Map</span><h2>Layers</h2></div>
+        <button class="close-button" data-close="layers-panel" type="button" aria-label="Close layers">×</button>
+      </div>
+      <div class="panel-scroll">
+        <p class="layer-intro">Choose a map, then add overlays to compare. CTX offers the most detail when NASA tiles are reachable; offline uses the bundled Viking mosaic.</p>
+        <section class="panel-section">
+          <div class="section-title-row"><h3>Base map</h3><span id="active-base-label">Viking colour</span></div>
+          <div id="base-layer-list" class="base-layer-list"></div>
+        </section>
+        <section class="panel-section">
+          <div class="section-title-row"><h3>Overlays</h3><span id="overlay-count">0 active</span></div>
+          <div class="layer-search-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 4.4 4.4"/></svg>
+            <input id="layer-filter" type="search" placeholder="Find a layer" autocomplete="off" />
+          </div>
+          <div id="overlay-layer-list" class="overlay-layer-list"></div>
+        </section>
+        <details class="custom-layer-details">
+          <summary>Add a tile service</summary>
+          <form id="custom-layer-form" class="custom-layer-form">
+            <label for="custom-layer-name">Layer name</label>
+            <input id="custom-layer-name" type="text" placeholder="e.g. Regional elevation" maxlength="60" required />
+            <label for="custom-layer-url">Tile resource URL</label>
+            <input id="custom-layer-url" type="url" placeholder="https://…/{TileMatrix}/{TileRow}/{TileCol}.jpg" required />
+            <p>Paste a tile template from WMTS capabilities or an XYZ URL. It must use Mars equirectangular coordinates (EPSG:104905).</p>
+            <button type="submit" class="text-action">Add to map</button>
+          </form>
+        </details>
+        <a class="external-row" href="https://trek.nasa.gov/mars/" target="_blank" rel="noreferrer">Browse the NASA/JPL Mars Trek resource map <span>↗</span></a>
+        <a class="external-row" href="https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars" target="_blank" rel="noreferrer">Open Mars Trek layer catalogue <span>↗</span></a>
+      </div>
+    </aside>
+
+    <aside class="floating-panel hidden" id="data-panel" aria-label="Mars data catalogue">
+      <div class="panel-heading">
+        <div><span class="panel-eyebrow">Sources &amp; downloads</span><h2>Data catalogue</h2></div>
+        <button class="close-button" data-close="data-panel" type="button" aria-label="Close data catalogue">×</button>
+      </div>
+      <div class="panel-scroll" id="data-source-list"></div>
+    </aside>
+
+    <aside class="floating-panel places-panel hidden" id="places-panel" aria-label="Mars places">
+      <div class="panel-heading">
+        <div><span class="panel-eyebrow">Explore</span><h2>Places</h2></div>
+        <button class="close-button" data-close="places-panel" type="button" aria-label="Close places">×</button>
+      </div>
+      <div class="panel-scroll">
+        <div id="place-list" class="place-list"></div>
+      </div>
+    </aside>
+
+    <aside class="floating-panel inspector-panel hidden" id="inspector-panel" aria-live="polite">
+      <div class="panel-heading">
+        <div><span class="panel-eyebrow">Surface point</span><h2 id="inspector-title">Selected location</h2></div>
+        <button class="close-button" id="clear-selection" type="button" aria-label="Close details">×</button>
+      </div>
+      <div class="panel-scroll">
+        <p class="inspector-coordinates" id="selected-coordinates">—</p>
+        <div class="coordinate-grid">
+          <div><span>Latitude</span><strong id="selected-lat">—</strong></div>
+          <div><span>Longitude</span><strong id="selected-lon">—</strong></div>
+        </div>
+        <p class="inspector-note" id="inspector-note">Location selected on the Viking global colour mosaic.</p>
+        <p class="inspector-note" id="backend-terrain" aria-live="polite">Select a location to load terrain data.</p>
+        <button class="text-action" id="bookmark-point" type="button">Save bookmark</button>
+        <button class="text-action" id="inspect-science" type="button">Explore science ›</button>
+        <p class="small-note" id="bookmark-status" aria-live="polite"></p>
+        <button class="panel-button" id="add-waypoint" type="button">Add to traverse</button>
+      </div>
+    </aside>
+
+    <aside class="floating-panel route-panel hidden" id="route-panel" aria-label="Traverse planner">
+      <div class="panel-heading">
+        <div><span class="panel-eyebrow">Mission planning</span><h2>Traverse</h2></div>
+        <button class="close-button" id="close-route" type="button" aria-label="Close traverse panel">×</button>
+      </div>
+      <div class="panel-scroll">
+        <p class="route-instruction" id="route-instruction">Click the surface to add waypoints. Right-click to finish.</p>
+        <div class="route-metrics">
+          <div><span>Distance</span><strong id="route-distance">0.0 <small>km</small></strong></div>
+          <div><span>Waypoints</span><strong id="route-points">0</strong></div>
+        </div>
+        <div class="waypoint-list" id="waypoint-list"><span class="empty-waypoints">No waypoints yet</span></div>
+        <div class="route-actions">
+          <button class="text-action" id="clear-route" type="button">Clear route</button>
+          <button class="panel-button" id="export-route" type="button" disabled>Export GeoJSON</button>
+        </div>
+        <p class="small-note">Distance is a surface estimate only. This prototype does not assess walkability or mission safety.</p>
+      </div>
+    </aside>
+
+    <div class="map-loading" id="map-loading"><span class="loading-spinner"></span><span>Finding Mars…</span></div>
+    <div class="map-error hidden" id="map-error" role="alert">
+      <strong id="map-error-title">Map unavailable</strong>
+      <p id="map-error-message">The globe could not initialize.</p>
+      <code id="map-error-detail"></code>
+      <button id="retry-map" type="button">Retry</button>
+    </div>
+
+    <dialog id="notice-dialog" class="notice-dialog">
+      <button class="close-button" id="close-notice" type="button" aria-label="Close">×</button>
+      <span class="panel-eyebrow">About NAM</span>
+      <h2>A field atlas for Mars.</h2>
+      <p>NAM — Navigation Assistance for Mars — lets you explore NASA/JPL imagery, compare planetary datasets and sketch proposed traverses. Scientific layers retain their source names and coverage limits.</p>
+      <p class="small-note">A drawn route is not a safety assessment. Surface hazards require separate, validated elevation and environmental datasets.</p>
+      <a href="https://trek.nasa.gov/mars/" target="_blank" rel="noreferrer">NASA/JPL Mars Trek resource map ↗</a>
+    </dialog>
+  </main>
+
+</body>
 </html>
