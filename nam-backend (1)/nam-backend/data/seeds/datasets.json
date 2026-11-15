@@ -1,0 +1,98 @@
+[
+ {
+  "id": "ds-ctx-murray",
+  "name": "Global CTX Mosaic (v01)",
+  "org": "Caltech Murray Lab",
+  "res_m": 5,
+  "url": "https://murray-lab.caltech.edu/CTX/",
+  "note": "Seamless 5 m/px Mars basemap"
+ },
+ {
+  "id": "ds-hirise-dtm",
+  "name": "HiRISE Digital Terrain Models",
+  "org": "NASA PDS / USGS Astrogeology",
+  "res_m": 1,
+  "url": "https://astrogeology.usgs.gov",
+  "note": "Sub-meter/regional precision DEMs"
+ },
+ {
+  "id": "ds-themis",
+  "name": "THEMIS IR day/night mosaics",
+  "org": "Arizona State University",
+  "res_m": 100,
+  "url": "https://themis.asu.edu",
+  "note": "Thermal inertia global layers"
+ },
+ {
+  "id": "ds-mola-megdr",
+  "name": "MOLA MEGDR 4 ppd global DEM",
+  "org": "NASA PDS Geosciences Node",
+  "res_m": 463,
+  "url": "https://pds-geosciences.wustl.edu",
+  "note": "Standard global topography product"
+ },
+ {
+  "id": "ds-mdim21",
+  "name": "Viking MDIM 2.1",
+  "org": "USGS Astrogeology",
+  "res_m": 232,
+  "url": "https://astrogeology.usgs.gov",
+  "note": "Global color mosaic"
+ },
+ {
+  "id": "ds-sim3292",
+  "name": "Geologic Map of Mars SIM 3292",
+  "org": "USGS",
+  "res_m": null,
+  "url": "https://pubs.usgs.gov/sim/3292/",
+  "note": "Interactive geologic units (Tanaka et al. 2014)"
+ },
+ {
+  "id": "ds-swim",
+  "name": "Subsurface Water Ice Mapping (SWIM)",
+  "org": "NASA/JPL/PSI",
+  "res_m": null,
+  "url": "https://swim.psi.edu",
+  "note": "Consensus ice maps and depth-to-ice"
+ },
+ {
+  "id": "ds-gazetteer",
+  "name": "Gazetteer of Planetary Nomenclature (Mars)",
+  "org": "USGS/IAU",
+  "res_m": null,
+  "url": "https://planetarynames.wr.usgs.gov/",
+  "note": "Thousands of approved feature names"
+ },
+ {
+  "id": "ds-perseverance-raw",
+  "name": "Perseverance Raw Images",
+  "org": "NASA/JPL-Caltech",
+  "res_m": null,
+  "url": "https://mars.nasa.gov/raw_images/",
+  "note": "Daily raw image feed (JSON/RSS at connector time)"
+ },
+ {
+  "id": "ds-curiosity-raw",
+  "name": "Curiosity Raw Images",
+  "org": "NASA/JPL-Caltech/MSSS",
+  "res_m": null,
+  "url": "https://mars.nasa/msl/raw/",
+  "note": "MSL raw image gallery"
+ },
+ {
+  "id": "ds-crism",
+  "name": "CRISM targeted reduced data",
+  "org": "NASA PDS",
+  "res_m": null,
+  "url": "https://pds-geosciences.wustl.edu",
+  "note": "Visible-NIR hyperspectral observations"
+ },
+ {
+  "id": "ds-marsis-sharad",
+  "name": "MARSIS / SHARAD sounding data",
+  "org": "ESA / NASA PDS",
+  "res_m": null,
+  "url": "https://www.esa.int",
+  "note": "Subsurface radar soundings"
+ }
+]

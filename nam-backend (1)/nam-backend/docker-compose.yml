@@ -1,0 +1,30 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      NAM_ALLOW_UPSTREAM: "1"
+      NAM_DB_PATH: "data/nam.db"
+    volumes:
+      - ./data:/srv/nam/data
+    restart: unless-stopped
+
+  # Optional production data layer. The backend ships with a SQLite DAO by
+  # default; infra/postgis_schema.sql contains the PostGIS migration DDL
+  # (gazetteer, nodes, missions with GEOMETRY columns) for deployment.
+  postgis:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: nam
+      POSTGRES_USER: nam
+      POSTGRES_PASSWORD: nam_local_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - nam_pgdata:/var/lib/postgresql/data
+      - ./infra/postgis_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    restart: unless-stopped
+
+volumes:
+  nam_pgdata:

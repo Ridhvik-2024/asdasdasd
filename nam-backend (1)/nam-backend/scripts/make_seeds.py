@@ -1,0 +1,439 @@
+#!/usr/bin/env python3
+"""Generate all NAM v2 seed JSON files (curated, provenance-carrying data).
+
+Coordinate convention: latitude degrees (south negative), longitude degrees
+EAST 0-360. Every entry carries a source string; simulated entries carry [SIM].
+"""
+import json
+from pathlib import Path
+
+SEEDS = Path(__file__).resolve().parents[1] / "data" / "seeds"
+SEEDS.mkdir(parents=True, exist_ok=True)
+
+USGS = "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+
+
+def w(name, data):
+    (SEEDS / name).write_text(json.dumps(data, ensure_ascii=True, indent=1), encoding="utf-8")
+    print("wrote", name, len(data) if isinstance(data, list) else "")
+
+
+# ---------------------------------------------------------------- gazetteer
+G = [
+    # (id, name, type, lat, lon, diameter_km, note)
+    ("olympus-mons", "Olympus Mons", "shield volcano", 18.65, 133.8, 600, "Largest volcano in the solar system; ~21.9 km above datum."),
+    ("ascraeus-mons", "Ascraeus Mons", "shield volcano", 11.8, 255.9, 460, "Northernmost of the Tharsis Montes."),
+    ("pavonis-mons", "Pavonis Mons", "shield volcano", 0.8, 247.0, 375, "Middle Tharsis Montes volcano, straddles the equator."),
+    ("arsia-mons", "Arsia Mons", "shield volcano", -8.35, 240.0, 475, "Southernmost Tharsis Montes volcano; skylight candidates on flanks."),
+    ("alba-patera", "Alba Mons", "shield volcano", 40.5, 250.1, 1600, "Low-profile, enormous shield north of Tharsis."),
+    ("elysium-mons", "Elysium Mons", "shield volcano", 25.0, 147.2, 240, "Principal volcano of Elysium Planitia."),
+    ("hecates-tholus", "Hecates Tholus", "volcano", 32.1, 150.2, 180, "Small Elysium-region volcano with possible glacial deposits."),
+    ("ceraunius-tholus", "Ceraunius Tholus", "volcano", 24.6, 263.3, 130, "Uranius group tholus, northern Tharsis."),
+    ("tharsis-tholus", "Tharsis Tholus", "volcano", 13.5, 262.5, 155, "Collapsed tholus east of Ascraeus."),
+    ("valles-marineris", "Valles Marineris", "canyon system", -11.0, 290.0, None, "The great equatorial canyon system, >4000 km long."),
+    ("noctis-labyrinthus", "Noctis Labyrinthus", "chaos terrain", -6.8, 256.0, None, "Intersecting graben at the western end of Valles Marineris."),
+    ("ius-chasma", "Ius Chasma", "canyon", -7.5, 275.5, None, "Western Tithonium-Ius trough pair."),
+    ("tithonium-chasma", "Tithonium Chasma", "canyon", -6.5, 273.5, None, "Northern parallel trough of the western canyon."),
+    ("candor-chasma", "Candor Chasma", "canyon", -6.5, 284.0, None, "Deep central canyon with interior layered deposits and sulfates."),
+    ("ophir-chasma", "Ophir Chasma", "canyon", -4.0, 285.0, None, "Central canyon north of Candor."),
+    ("melas-chasma", "Melas Chasma", "canyon", -10.3, 289.5, None, "Deepest section of the central Valles Marineris."),
+    ("capri-chasma", "Capri Chasma", "canyon", -12.9, 307.0, None, "Eastern canyon sector."),
+    ("eos-chasma", "Eos Chasma", "canyon", -11.5, 315.0, None, "Eastern canyon leading toward chaos terrain."),
+    ("ganges-chasma", "Ganges Chasma", "canyon", -8.2, 315.3, None, "Northeastward branch with alcoves."),
+    ("juventae-chasma", "Juventae Chasma", "chaos terrain", -4.5, 297.6, None, "Collapsed basin north of Ophir; sulfate mounds."),
+    ("hebes-chasma", "Hebes Chasma", "canyon", -1.0, 283.4, None, "Isolated closed canyon north of the main system."),
+    ("echus-chasma", "Echus Chasma", "canyon", 1.0, 279.0, None, "Source region of Kasei Valles outflow."),
+    ("hellas-planitia", "Hellas Planitia", "impact basin", -42.4, 70.5, 2200, "Largest confirmed impact basin on Mars, floor ~7 km deep."),
+    ("argyre-planitia", "Argyre Planitia", "impact basin", -50.0, 318.0, 1800, "Southern highlands multi-ring impact basin."),
+    ("isidis-planitia", "Isidis Planitia", "impact basin", 13.0, 87.5, 1500, "Ancient basin between highlands and Syrtis Major."),
+    ("utopia-planitia", "Utopia Planitia", "plain", 46.7, 117.5, None, "Northern lowland plain; largest visible impact basin region."),
+    ("arcadia-planitia", "Arcadia Planitia", "plain", 45.0, 190.0, None, "Smooth northern plain; prime shallow-ice candidate region."),
+    ("amazonis-planitia", "Amazonis Planitia", "plain", 25.0, 198.0, None, "Extremely smooth northern lowlands."),
+    ("elysium-planitia", "Elysium Planitia", "plain", 5.0, 140.0, None, "InSight landing region; recent volcanic and fluvial features."),
+    ("chryse-planitia", "Chryse Planitia", "plain", 22.0, 312.0, None, "Outflow-channel mouth plain; Viking 1 landing region."),
+    ("acidalia-planitia", "Acidalia Planitia", "plain", 45.0, 340.0, None, "Northern lowland plain north of Valles Marineris outfalls."),
+    ("meridiani-planum", "Meridiani Planum", "plain", -2.0, 354.0, None, "Hematite-rich plains; Opportunity traverse region."),
+    ("gale", "Gale", "crater", -5.4, 137.8, 154, "Landing crater of Curiosity; central mound (Aeolis Mons)."),
+    ("jezero", "Jezero", "crater", 18.4, 77.7, 45, "Perseverance landing crater with preserved delta."),
+    ("gusev", "Gusev", "crater", -14.6, 175.5, 166, "Spirit landing crater; Ma'adim Vallis channel enters it."),
+    ("endeavour", "Endeavour", "crater", -2.28, 354.5, 22, " Opportunity's final traverse destination, Noachian rim."),
+    ("victoria", "Victoria", "crater", -2.05, 354.5, 0.8, "Opportunity circumnavigated this scalloped crater."),
+    ("holden", "Holden", "crater", -26.0, 325.0, 154, "Candidate closed-basin paleolake with fan deposits."),
+    ("eberswalde", "Eberswalde", "crater", -21.9, 326.7, 65, "Preserved fluvial delta; MSL finalist site."),
+    ("mawrth-vallis", "Mawrth Vallis", "outflow channel", 22.0, 343.0, None, "Deep phyllosilicate stratigraphy; ExoMars candidate site."),
+    ("ares-vallis", "Ares Vallis", "outflow channel", 17.5, 322.0, None, "Catastrophic outflow channel into Chryse; Pathfinder region."),
+    ("kasei-valles", "Kasei Valles", "outflow channel", 12.0, 295.0, None, "Largest outflow channel system."),
+    ("maadim-vallis", "Ma'adim Vallis", "valley", -19.0, 178.0, None, "Channel that fed Gusev crater."),
+    ("nanedi-vallis", "Nanedi Vallis", "valley", 5.5, 314.0, None, "Inscribed valley with inner channel, classic fluvial form."),
+    ("nirgal-vallis", "Nirgal Vallis", "valley", -28.0, 317.0, None, "Branching valley in the southern highlands."),
+    ("dao-vallis", "Dao Vallis", "valley", -36.0, 88.0, None, "Hellas rim valley possibly fed by snowmelt."),
+    ("nilosyrtis-mensae", "Nilosyrtis Mensae", "mensae", 34.0, 302.0, None, "Dichotomy-boundary knobs; ice-rich mantling."),
+    ("deuteronilus-mensae", "Deuteronilus Mensae", "mensae", 38.5, 338.0, None, "Glacial ice-rich mesas on the dichotomy boundary."),
+    ("protonilus-mensae", "Protonilus Mensae", "mensae", 42.0, 330.0, None, "Lobate debris aprons; shallow ice."),
+    ("medusae-fossae", "Medusae Fossae", "formation", -3.0, 165.0, None, "Soft, wind-eroded equatorial ash/tuff unit with yardangs."),
+    ("cerberus-fossae", "Cerberus Fossae", "fossae", 6.5, 160.0, None, "Active graben system; source of many InSight marsquakes."),
+    ("cydonia-mensae", "Cydonia Mensae", "mensae", 40.75, 350.5, None, "Knob-and-mesa terrain on the dichotomy boundary."),
+    ("korolev", "Korolev", "crater", 72.8, 164.6, 82, "Deep northern crater holding a permanent ice mound."),
+    ("louth", "Louth", "crater", 70.2, 247.7, 36, "High-latitude crater with permanent water-ice cap."),
+    ("planum-boreum", "Planum Boreum", "polar cap", 87.0, 0.0, None, "Northern permanent ice cap and layered deposits."),
+    ("planum-australe", "Planum Australe", "polar cap", -87.0, 0.0, None, "Southern permanent ice cap."),
+    ("syrtis-major", "Syrtis Major Planum", "plain", 8.0, 290.0, None, "Dark basaltic shield plain west of Isidis."),
+    ("tartarus-colles", "Tartarus Colles", "colles", 25.0, 150.5, None, "Knob field east of Elysium Mons."),
+]
+features = [
+    {"id": i, "name": n, "type": t, "lat": la, "lon": lo,
+     "diameter_km": d, "note": note, "src": USGS}
+    for (i, n, t, la, lo, d, note) in G
+]
+
+# ------------------------------------------------------------- landing sites
+landing_sites = [
+    {"id": "viking-1", "name": "Viking 1 (Chryse Planitia)", "mission": "Viking 1", "kind": "lander",
+     "lat": 22.697, "lon": 311.78, "date": "1976-07-20", "src": "NASA/JPL mission documentation"},
+    {"id": "viking-2", "name": "Viking 2 (Utopia Planitia)", "mission": "Viking 2", "kind": "lander",
+     "lat": 47.97, "lon": 225.74, "date": "1976-09-03", "src": "NASA/JPL mission documentation"},
+    {"id": "pathfinder", "name": "Mars Pathfinder (Ares Vallis)", "mission": "Mars Pathfinder", "kind": "lander+rover",
+     "lat": 19.13, "lon": 326.78, "date": "1997-07-04", "src": "NASA/JPL mission documentation"},
+    {"id": "spirit", "name": "Spirit (Gusev crater)", "mission": "MER-A Spirit", "kind": "rover",
+     "lat": -14.609, "lon": 175.472, "date": "2004-01-04", "traverse_km": 7.7, "src": "NASA/JPL MER documentation"},
+    {"id": "opportunity", "name": "Opportunity (Meridiani Planum)", "mission": "MER-B Opportunity", "kind": "rover",
+     "lat": -1.946, "lon": 354.473, "date": "2004-01-25", "traverse_km": 45.0, "src": "NASA/JPL MER documentation"},
+    {"id": "phoenix", "name": "Phoenix (Green Valley, Vastitas Borealis)", "mission": "Phoenix", "kind": "lander",
+     "lat": 68.22, "lon": 234.25, "date": "2008-05-25", "src": "NASA/JPL/University of Arizona"},
+    {"id": "curiosity", "name": "Curiosity (Gale crater, Bradbury Landing)", "mission": "MSL Curiosity", "kind": "rover",
+     "lat": -4.5895, "lon": 137.4417, "date": "2012-08-06", "traverse_km": 31.0, "src": "NASA/JPL-Caltech MSL documentation"},
+    {"id": "insight", "name": "InSight (Homestead Hollow, Elysium Planitia)", "mission": "InSight", "kind": "lander",
+     "lat": 4.502, "lon": 135.623, "date": "2018-11-26", "src": "NASA/JPL InSight documentation"},
+    {"id": "perseverance", "name": "Perseverance (Jezero crater, Octavia E. Butler)", "mission": "Mars 2020 Perseverance", "kind": "rover",
+     "lat": 18.4447, "lon": 77.4508, "date": "2021-02-18", "traverse_km": 20.0, "src": "NASA/JPL-Caltech Mars 2020 documentation"},
+    {"id": "zhurong", "name": "Zhurong (Utopia Planitia)", "mission": "Tianwen-1 Zhurong", "kind": "rover",
+     "lat": 25.066, "lon": 109.925, "date": "2021-05-14", "src": "CNSA published landing coordinates"},
+]
+
+# ------------------------------------------------------------- science layers
+layers = [
+    {"id": "mdim21", "title": "Viking MDIM 2.1 global color mosaic", "category": "imagery", "res_m": 232,
+     "source": "USGS Astrogeology", "attribution": "USGS/NASA Viking Orbiter MDIM 2.1", "url": "https://astrogeology.usgs.gov", "legend": "Planetary-scale color base map"},
+    {"id": "ctx-murray", "title": "Caltech Murray Lab Global CTX Mosaic (v01)", "category": "imagery", "res_m": 5,
+     "source": "Caltech Murray Lab (murray-lab.caltech.edu)", "attribution": "Caltech/MSSS/NASA JPL; image courtesy Bruce Murray Lab",
+     "url": "https://murray-lab.caltech.edu/CTX/", "legend": "~5 m/px, 99.5% coverage between 88S and 88N; default surface layer"},
+    {"id": "hirise-insets", "title": "HiRISE deep-zoom insets", "category": "imagery", "res_m": 0.3,
+     "source": "NASA/JPL/University of Arizona HiRISE", "attribution": "NASA/JPL-Caltech/University of Arizona",
+     "url": "https://www.uahirise.org/", "legend": "~25-30 cm/px insets at supported locations"},
+    {"id": "themis-day", "title": "THEMIS daytime infrared", "category": "imagery", "res_m": 100,
+     "source": "ASU THEMIS / USGS", "attribution": "NASA/JPL-Caltech/Arizona State University", "url": "https://themis.asu.edu",
+     "legend": "Global thermal inertia at ~100 m/px"},
+    {"id": "themis-night", "title": "THEMIS nighttime infrared", "category": "imagery", "res_m": 100,
+     "source": "ASU THEMIS / USGS", "attribution": "NASA/JPL-Caltech/Arizona State University", "url": "https://themis.asu.edu",
+     "legend": "Night-time thermal; exposes bedrock and dust cover"},
+    {"id": "mola-color", "title": "MOLA color elevation", "category": "topography", "res_m": 463,
+     "source": "NASA MOLA MEGDR (4 ppd)", "attribution": "NASA/JPL-Caltech/GSFC MOLA team", "url": "https://pds-geosciences.wustl.edu",
+     "legend": "Global topography from MOLA laser altimetry"},
+    {"id": "mola-shaded", "title": "MOLA shaded relief", "category": "topography", "res_m": 463,
+     "source": "USGS / OpenPlanetaryMap derived", "attribution": "NASA MOLA; rendering via OpenPlanetaryMap", "url": "https://openplanetary.org",
+     "legend": "Hillshaded global topography"},
+    {"id": "sim3292-geology", "title": "Geologic Map of Mars (SIM 3292)", "category": "geology",
+     "res_m": None, "source": "USGS Geologic Investigations Series I-1803? no - SIM 3292 (K. Tanaka et al. 2014)",
+     "attribution": "USGS/NASA, Tanaka, Skinner, Dohm et al. (2014)", "url": "https://pubs.usgs.gov/sim/3292/",
+     "legend": "Interactive stratigraphic units, Noachian-Amazonian"},
+    {"id": "swim-probability", "title": "SWIM subsurface water-ice probability", "category": "ice",
+     "res_m": None, "source": "SWIM project (Planetary Science Institute / JPL)", "attribution": "NASA/JPL/PSI SWIM team",
+     "url": "https://swim.psi.edu", "legend": "Consensus ice-likelihood classes A/B/C"},
+    {"id": "depth-to-ice", "title": "Depth to ice (SWIM-derived)", "category": "ice", "res_m": None,
+     "source": "SWIM project (swim.psi.edu)", "attribution": "NASA/JPL/PSI SWIM team", "url": "https://swim.psi.edu",
+     "legend": "Depth-to-ice categories: <1 m, 1-5 m, >5 m"},
+    {"id": "valley-networks", "title": "Valley network catalog", "category": "hydrology", "res_m": None,
+     "source": "Published valley-network compilations (Noachian fluvial systems)", "attribution": "Compiled from peer-reviewed catalogs; anchor set verified at connector time",
+     "legend": "Noachian drainage systems"},
+    {"id": "paleolakes", "title": "Paleolake and open-basin catalog", "category": "hydrology", "res_m": None,
+     "source": "Published paleolake catalogs (closed-basin candidates)", "attribution": "Compiled from peer-reviewed catalogs; anchor set verified at connector time",
+     "legend": "Ancient lake candidates with inlet/outlet evidence"},
+    {"id": "crater-catalog", "title": "Published crater catalog", "category": "craters", "res_m": None,
+     "source": "Published crater size-frequency catalogs", "attribution": "Compiled catalogs; verify at connector time",
+     "legend": "Crater distributions for dating and analysis"},
+    {"id": "mineralogy", "title": "Mineralogical summaries (CRISM/OMEGA-derived)", "category": "mineralogy", "res_m": None,
+     "source": "Published CRISM/OMEGA spectral summaries", "attribution": "NASA/JPL CRISM; ESA OMEGA", "legend": "Phyllosilicate, sulfate, carbonate provinces"},
+    {"id": "volcanic-regions", "title": "Volcanic region registry", "category": "volcanology", "res_m": None,
+     "source": "USGS gazetteer + published volcanic compilations", "attribution": "USGS; compiled",
+     "legend": "Shields, tholi, paterae, fissures"},
+    {"id": "rover-traverses", "title": "Rover traverses (historical)", "category": "experience", "res_m": None,
+     "source": "NASA/JPL published traverse maps", "attribution": "NASA/JPL-Caltech",
+     "legend": "Spirit, Opportunity, Curiosity, Perseverance, Zhurong routes"},
+    {"id": "panorama-poses", "title": "Street View camera poses", "category": "experience", "res_m": None,
+     "source": "NAM panorama catalog (NASA/JPL-published mosaics)", "attribution": "NASA/JPL-Caltech/MSSS/ASU/Cornell",
+     "legend": "Clickable camera positions with capture date and credit"},
+    {"id": "shelters", "title": "Shelter candidates", "category": "resources", "res_m": None,
+     "source": "NAM curated candidates [SIM] scoring", "attribution": "NAM; coordinates approximate - verify against HiRISE before any use",
+     "legend": "Lava tubes, crater/ice shelters, canyon alcoves, overhangs"},
+    {"id": "water-candidates", "title": "Water-ice candidates", "category": "resources", "res_m": None,
+     "source": "SWIM-consistent regions (swim.psi.edu)", "attribution": "SWIM project; NAM interpretation",
+     "legend": "Certainty classes, depth-to-ice, stability logic"},
+    {"id": "presence-agents", "title": "Presence layer (crew, rovers, habitats)", "category": "simulation", "res_m": None,
+     "source": "NAM presence simulation [SIM]", "attribution": "NAM simulated presence feed",
+     "legend": "Live [SIM] positions of crews, rovers, habitats"},
+]
+
+# ------------------------------------------------------------- observations (cited discoveries)
+observations = [
+    {"id": "jezero-delta-phyllosilicates", "title": "Phyllosilicate-rich delta deposits in Jezero crater",
+     "lat": 18.44, "lon": 77.6, "mission": "MRO CRISM / Perseverance", "instrument": "CRISM",
+     "summary": "Fe/Mg- and Al-rich clay minerals mapped in the Jezero western delta, targets for Perseverance sample collection.",
+     "evidence": {"citation": "Ehlmann et al. (2008), Nature Geoscience - clay minerals in the Nili Fossae/Jezero region; NASA/JPL Perseverance mission reports", "url": "https://science.nasa.gov/mars"},
+     "tags": ["phyllosilicates", "delta", "astrobiology"]},
+    {"id": "gale-habitable-lake", "title": "Long-lived lacustrine environment in Gale crater",
+     "lat": -5.0, "lon": 137.6, "mission": "MSL Curiosity", "instrument": "MASTCAM/CHEMIN",
+     "summary": "Fine-grained sedimentary rocks at Yellowknife Bay record an ancient lake with neutral-pH chemistry.",
+     "evidence": {"citation": "Grotzinger et al. (2014), Science 343 - A habitable fluvio-lacustrine environment at Yellowknife Bay, Gale crater", "url": None},
+     "tags": ["paleolake", "habitability"]},
+    {"id": "rsl-palikir", "title": "Recurring Slope Lineae in Palikir crater",
+     "lat": -41.6, "lon": 317.0, "mission": "MRO HiRISE", "instrument": "HiRISE",
+     "summary": "Dark seasonal flows on warm steep slopes; formation mechanism remains debated (brine vs dry granular).",
+     "evidence": {"citation": "McEwen et al. (2011), Science 333 - Seasonal flows on warm Martian slopes", "url": "https://www.uahirise.org/"},
+     "tags": ["RSL", "active processes"]},
+    {"id": "basal-ice-ultimi", "title": "Bright basal reflector beneath Ultimi Scopuli ice",
+     "lat": -81.0, "lon": 120.0, "mission": "MARSIS / Mars Express", "instrument": "MARSIS",
+     "summary": "Basal returns interpreted by some as liquid water; interpretation is actively debated in the literature.",
+     "evidence": {"citation": "Orosei et al. (2018), Science 361 - Radar evidence of subglacial liquid water (interpretation contested)", "url": "https://www.esa.int"},
+     "tags": ["ice", "radar"]},
+    {"id": "methane-seasonal", "title": "Seasonal methane variation in Gale crater",
+     "lat": -4.7, "lon": 137.4, "mission": "MSL Curiosity", "instrument": "TLS/SAM",
+     "summary": "Background methane shows strong seasonal modulation; trace spikes observed on some sols.",
+     "evidence": {"citation": "Webster et al. (2018), Science 360 - Background levels of methane show strong seasonal anomalies", "url": None},
+     "tags": ["atmosphere", "methane"]},
+    {"id": "organics-murray", "title": "Organic molecules in 3-billion-year-old mudstone",
+     "lat": -4.7, "lon": 137.4, "mission": "MSL Curiosity", "instrument": "SAM",
+     "summary": "Thiophenic, aromatic and aliphatic compounds released from Murray formation mudstones.",
+     "evidence": {"citation": "Eigenbrode et al. (2018), Science 360 - Organic matter preserved in 3-billion-year-old mudstones", "url": None},
+     "tags": ["organics", "astrobiology"]},
+    {"id": "chloride-deposits", "title": "Chloride-bearing mid-latitude deposits",
+     "lat": -30.0, "lon": 20.0, "mission": "Mars Odyssey THEMIS", "instrument": "THEMIS",
+     "summary": "Hundreds of chloride salt outcrops mapped in the southern highlands, evidence of evaporitic settings.",
+     "evidence": {"citation": "Osterloo et al. (2010), JGR Planets - Chloride-bearing materials in the southern highlands of Mars", "url": "https://themis.asu.edu"},
+     "tags": ["salts", "evaporite"]},
+    {"id": "glacier-like-forms", "title": "Glacier-like forms across the mid-latitudes",
+     "lat": 38.5, "lon": 338.0, "mission": "Mars Express HRSC / MRO", "instrument": "HRSC/CTX",
+     "summary": "Thousands of viscous flow features (lobate debris aprons, tongue-shaped glaciers) record Amazonian ice.",
+     "evidence": {"citation": "Souness & Hubbard (2012), JGR Planets - An inventory and characterization of glacier-like forms on Mars", "url": None},
+     "tags": ["glacial", "ice"]},
+    {"id": "vm-sulfates", "title": "Interior layered deposits with sulfates in Valles Marineris",
+     "lat": -6.5, "lon": 284.0, "mission": "Mars Express OMEGA", "instrument": "OMEGA",
+     "summary": "Kieserite and other hydrated sulfates detected in Candor and other canyon interior layered deposits.",
+     "evidence": {"citation": "Gendrin et al. (2005), Science 307 - Sulfates in Martian layered terrains: the OMEGA/Mars Express view", "url": None},
+     "tags": ["sulfates", "canyon"]},
+    {"id": "highland-gullies", "title": "Gullies on crater walls",
+     "lat": -30.0, "lon": 15.0, "mission": "MGS MOC / MRO", "instrument": "MOC/HiRISE",
+     "summary": "Alcove-channel-fan gully landforms on steep slopes; initially proposed as water-related, mechanisms debated.",
+     "evidence": {"citation": "Malin & Edgett (2000), Science 288 - Evidence for recent groundwater seepage and surface runoff on Mars", "url": None},
+     "tags": ["gullies", "geomorphology"]},
+    {"id": "insight-seismicity", "title": "Marsquakes localized at Cerberus Fossae",
+     "lat": 6.5, "lon": 160.0, "mission": "InSight SEIS", "instrument": "SEIS",
+     "summary": "The majority of detected marsquakes originate from the Cerberus Fossae graben system.",
+     "evidence": {"citation": "Giardini et al. (2020), Nature Geoscience - Seismicity of Mars; InSight mission reports", "url": "https://science.nasa.gov/mars"},
+     "tags": ["seismicity", "tectonics"]},
+    {"id": "utopia-zhurong", "title": "Hydrous terrain indicators in Utopia Planitia",
+     "lat": 25.1, "lon": 109.9, "mission": "Tianwen-1 Zhurong", "instrument": "NaTeCam/MarSCoDe",
+     "summary": "Zhurong rover observations of terrain in Utopia interpreted as related to past aqueous activity.",
+     "evidence": {"citation": "Liu et al. (2022), Nature - Zhurong rover observations of Utopia Planitia", "url": None},
+     "tags": ["rover", "aqueous"]},
+    {"id": "swim-consensus", "title": "Consensus subsurface ice mapping (SWIM)",
+     "lat": 45.0, "lon": 190.0, "mission": "SWIM project", "instrument": "multi-dataset consensus",
+     "summary": "Aggregated radar, geomorphic, thermal and neutron evidence for shallow ice across the mid-latitudes.",
+     "evidence": {"citation": "SWIM project (NASA/JPL/PSI) consensus maps", "url": "https://swim.psi.edu"},
+     "tags": ["ice", "resource"]},
+    {"id": "meridiani-hematite", "title": "Hematite 'blueberry' concretions at Meridiani Planum",
+     "lat": -1.95, "lon": 354.47, "mission": "MER-B Opportunity", "instrument": "Mini-TES/Pancam",
+     "summary": "Spherical hematite concretions and sulfate sandstones record an ancient evaporite environment.",
+     "evidence": {"citation": "Squyres et al. (2004), Science 306 - Opportunity at Meridiani Planum", "url": None},
+     "tags": ["rover", "hematite", "evaporite"]},
+    {"id": "gediz-vallis-ridge", "title": "Gediz Vallis Ridge debris-flow deposits",
+     "lat": -4.6, "lon": 137.4, "mission": "MSL Curiosity", "instrument": "Mastcam/Navcam",
+     "summary": "Curiosity imaged and drove through boulder-rich ridges interpreted as debris flows from Mt Sharp's upper slopes.",
+     "evidence": {"citation": "NASA/JPL-Caltech/MSSS mission updates (2023-2024) on Gediz Vallis Ridge", "url": "https://mars.nasa.gov/"},
+     "tags": ["rover", "geomorphology"]},
+]
+
+# ------------------------------------------------------------- panoramas (Street View)
+panoramas = [
+    {"id": "p-sol911", "rover": "Perseverance", "sol": 911, "title": "Navcam 360-degree panorama on the Jezero delta (Sol 911)",
+     "lat": 18.46, "lon": 77.44, "heading_deg": 240, "credit": "NASA/JPL-Caltech", "source_url": "https://mars.nasa.gov/raw_images/",
+     "pose_confidence": "approximate", "resolution_note": "Navcam mosaic", "date": "2023-07"},
+    {"id": "p-sol3", "rover": "Perseverance", "sol": 3, "title": "First 360-degree view from Octavia E. Butler landing",
+     "lat": 18.4447, "lon": 77.4508, "heading_deg": 130, "credit": "NASA/JPL-Caltech/ASU", "source_url": "https://mars.nasa.gov/raw_images/",
+     "pose_confidence": "landing-site documented", "resolution_note": "Navcam mosaic", "date": "2021-02-20"},
+    {"id": "p-santacruz", "rover": "Perseverance", "sol": 610, "title": "Santa Cruz hill panorama, eastern Jezero",
+     "lat": 18.44, "lon": 77.46, "heading_deg": 95, "credit": "NASA/JPL-Caltech/ASU/MSSS", "source_url": "https://mars.nasa.gov/raw_images/",
+     "pose_confidence": "approximate", "resolution_note": "Mastcam-Z mosaic", "date": "2021-11"},
+    {"id": "p-18gpx", "rover": "Curiosity", "sol": 2600, "title": "1.8-billion-pixel panorama of the Gale crater region",
+     "lat": -4.7, "lon": 137.4, "heading_deg": 200, "credit": "NASA/JPL-Caltech/MSSS", "source_url": "https://mars.nasa.gov/raw_images/",
+     "pose_confidence": "approximate", "resolution_note": "Mastcam 1.8 Gpx composite (released 2021)", "date": "2021-03"},
+    {"id": "p-gediz", "rover": "Curiosity", "sol": 771, "title": "Gediz Vallis Ridge view",
+     "lat": -4.6, "lon": 137.4, "heading_deg": 270, "credit": "NASA/JPL-Caltech/MSSS", "source_url": "https://mars.nasa.gov/raw_images/",
+     "pose_confidence": "approximate", "resolution_note": "Mastcam mosaic", "date": "2014-12"},
+    {"id": "p-vera-rubin", "rover": "Curiosity", "sol": 2900, "title": "View from the western buttes of Mt Sharp",
+     "lat": -4.75, "lon": 137.4, "heading_deg": 180, "credit": "NASA/JPL-Caltech/MSSS", "source_url": "https://mars.nasa.gov/raw_images/",
+     "pose_confidence": "approximate", "resolution_note": "Mastcam panorama", "date": "2020-11"},
+    {"id": "p-cape-verde", "rover": "Opportunity", "sol": 952, "title": "Cape Verde promontory at Victoria crater",
+     "lat": -2.05, "lon": 354.5, "heading_deg": 320, "credit": "NASA/JPL-Caltech/Cornell", "source_url": "https://mars.nasa.gov/mer/",
+     "pose_confidence": "approximate", "resolution_note": "Pancam mosaic", "date": "2006-10"},
+    {"id": "p-persvalley", "rover": "Opportunity", "sol": 4730, "title": "Perseverance Valley overlook at Endeavour crater",
+     "lat": -2.28, "lon": 354.55, "heading_deg": 150, "credit": "NASA/JPL-Caltech/Cornell", "source_url": "https://mars.nasa.gov/mer/",
+     "pose_confidence": "approximate", "resolution_note": "Pancam mosaic", "date": "2017-06"},
+    {"id": "p-husband", "rover": "Spirit", "sol": 620, "title": "Summit of Husband Hill, Gusev crater",
+     "lat": -14.62, "lon": 175.53, "heading_deg": 20, "credit": "NASA/JPL-Caltech/Cornell", "source_url": "https://mars.nasa.gov/mer/",
+     "pose_confidence": "approximate", "resolution_note": "Pancam summit panorama", "date": "2005-09"},
+    {"id": "p-viking1", "rover": "Viking 1", "sol": None, "title": "Color panorama of Chryse Planitia from the Viking 1 lander",
+     "lat": 22.697, "lon": 311.78, "heading_deg": 0, "credit": "NASA/JPL", "source_url": "https://science.nasa.gov/mars",
+     "pose_confidence": "landing-site documented", "resolution_note": "Facsimile camera scan", "date": "1976-07"},
+    {"id": "p-pathfinder", "rover": "Pathfinder", "sol": None, "title": "Super Panorama from the Sagan Memorial Station",
+     "lat": 19.13, "lon": 326.78, "heading_deg": 0, "credit": "NASA/JPL/USGS", "source_url": "https://science.nasa.gov/mars",
+     "pose_confidence": "landing-site documented", "resolution_note": "IMP super panorama", "date": "1997-10"},
+    {"id": "p-phoenix", "rover": "Phoenix", "sol": 30, "title": "Phoenix lander panorama over the Snow White trench",
+     "lat": 68.22, "lon": 234.25, "heading_deg": 45, "credit": "NASA/JPL-Caltech/University of Arizona/Texas A&M/Max Planck",
+     "source_url": "https://science.nasa.gov/mars", "pose_confidence": "landing-site documented",
+     "resolution_note": "SSI color mosaic", "date": "2008-06"},
+]
+
+# ------------------------------------------------------------- POV library (Walk View)
+povs = [
+    {"id": "pov-jezero-oeb", "name": "Octavia E. Butler landing floor", "region": "Jezero", "lat": 18.4447, "lon": 77.4508, "heading_deg": 130, "note": "Perseverance touchdown point; flat crater floor"},
+    {"id": "pov-jezero-delta", "name": "Delta front overlook", "region": "Jezero", "lat": 18.44, "lon": 77.6, "heading_deg": 250, "note": "Looking west across the preserved delta scarp"},
+    {"id": "pov-jezero-kodiak", "name": "Kodiak butte viewpoint", "region": "Jezero", "lat": 18.42, "lon": 77.7, "heading_deg": 290, "note": "Isolated butte recording delta stratigraphy"},
+    {"id": "pov-gale-bradbury", "name": "Bradbury Landing", "region": "Gale", "lat": -4.5895, "lon": 137.4417, "heading_deg": 210, "note": "Curiosity touchdown; Aeolis Mons on the horizon"},
+    {"id": "pov-gale-teal", "name": "Teal Ridge (Vera Rubin ridge flank)", "region": "Gale", "lat": -4.7, "lon": 137.4, "heading_deg": 180, "note": "Hematite-bearing ridge unit"},
+    {"id": "pov-meridiani-eagle", "name": "Eagle crater rim", "region": "Meridiani", "lat": -1.95, "lon": 354.47, "heading_deg": 160, "note": "Opportunity's first crater; hematite plains"},
+    {"id": "pov-meridiani-capeverde", "name": "Cape Verde, Victoria crater", "region": "Meridiani", "lat": -2.05, "lon": 354.5, "heading_deg": 320, "note": "Cliffed crater promontory"},
+    {"id": "pov-gusev-husband", "name": "Husband Hill summit", "region": "Gusev", "lat": -14.62, "lon": 175.53, "heading_deg": 20, "note": "Columbia Hills high point"},
+    {"id": "pov-elysium-insight", "name": "Homestead Hollow (InSight)", "region": "Elysium", "lat": 4.502, "lon": 135.623, "heading_deg": 45, "note": "Smooth plains lander site"},
+    {"id": "pov-elysium-cerberus", "name": "Cerberus Fossae overlook", "region": "Elysium", "lat": 6.5, "lon": 160.0, "heading_deg": 90, "note": "Seismically active graben walls"},
+]
+
+# ------------------------------------------------------------- shelters (12 curated)
+shelters = [
+    {"id": "sh-arsia-skylight", "name": "Arsia Mons SW flank skylight chain", "type": "lava-tube skylight", "lat": -8.6, "lon": 240.3,
+     "note": "Collapse openings on Arsia's flank; meters-thick basalt roof", "shielding": 92, "thermal": 78, "access": 55},
+    {"id": "sh-tractus-catena", "name": "Tractus Catena pit chain", "type": "lava-tube skylight", "lat": 3.3, "lon": 263.0,
+     "note": "Aligned pits along a Tharsis tube system", "shielding": 88, "thermal": 74, "access": 62},
+    {"id": "sh-hephaestus", "name": "Hephaestus Fossae tube segment", "type": "lava-tube skylight", "lat": 21.3, "lon": 126.5,
+     "note": "Long fossa tube west of Elysium", "shielding": 86, "thermal": 72, "access": 58},
+    {"id": "sh-hellas-alcove", "name": "Hellas eastern rim alcove", "type": "crater alcove", "lat": -38.0, "lon": 100.0,
+     "note": "Deep alcove in the high Hellas rim; thick atmosphere column", "shielding": 70, "thermal": 65, "access": 68},
+    {"id": "sh-louth", "name": "Louth crater ice patch shelter", "type": "ice-filled crater", "lat": 70.2, "lon": 247.7,
+     "note": "Permanent water-ice cap for thermal stability and resource", "shielding": 62, "thermal": 88, "access": 55},
+    {"id": "sh-korolev", "name": "Korolev crater ice mound", "type": "ice-filled crater", "lat": 72.8, "lon": 164.6,
+     "note": "Deep crater trapping a ~2 km ice mound", "shielding": 64, "thermal": 92, "access": 48},
+    {"id": "sh-hebes-alcove", "name": "Hebes Chasma interior alcove", "type": "canyon alcove", "lat": -1.0, "lon": 283.3,
+     "note": "Isolated canyon with tall walls", "shielding": 74, "thermal": 60, "access": 70},
+    {"id": "sh-candor-alcove", "name": "Candor Chasma layered-deposit alcove", "type": "canyon alcove", "lat": -6.5, "lon": 284.5,
+     "note": "Caves/alcoves in ILD sulfates", "shielding": 72, "thermal": 58, "access": 72},
+    {"id": "sh-ganges-alcove", "name": "Ganges Chasma alcove", "type": "canyon alcove", "lat": -8.2, "lon": 315.3,
+     "note": "Northeast canyon branch alcoves", "shielding": 70, "thermal": 58, "access": 74},
+    {"id": "sh-medusae-overhang", "name": "Medusae Fossae yardang overhang", "type": "overhang", "lat": -3.5, "lon": 158.0,
+     "note": "Easily carved soft tuff provides ready overhangs", "shielding": 55, "thermal": 52, "access": 86},
+    {"id": "sh-juventae-overhang", "name": "Juventae Chasma overhang", "type": "overhang", "lat": -4.6, "lon": 297.5,
+     "note": "Sulfate mound margins with undercut faces", "shielding": 58, "thermal": 54, "access": 78},
+    {"id": "sh-cerberus-tube", "name": "Cerberus Fossae tube segment", "type": "lava-tube skylight", "lat": 6.5, "lon": 158.0,
+     "note": "Young tube near seismically active Fossae (verify stability)", "shielding": 84, "thermal": 70, "access": 64},
+]
+
+# ------------------------------------------------------------- water candidates (SWIM-consistent)
+water = [
+    {"id": "w-arcadia", "name": "Arcadia Planitia shallow ice", "lat": 45.0, "lon": 190.0, "certainty": "A",
+     "depth_to_ice_m": [0.5, 2.0], "note": "Prime mid-latitude drilling candidate; smooth, safe terrain",
+     "src": "SWIM consensus (swim.psi.edu); published mid-latitude ice studies"},
+    {"id": "w-erebus", "name": "Erebus Montes ice-rich terrain", "lat": 45.0, "lon": 210.0, "certainty": "B",
+     "depth_to_ice_m": [1.0, 5.0], "note": "Knobby terrain with ice-exposing ejecta", "src": "SWIM consensus (swim.psi.edu)"},
+    {"id": "w-deuteronilus", "name": "Deuteronilus Mensae glacial complex", "lat": 38.5, "lon": 338.0, "certainty": "A",
+     "depth_to_ice_m": [1.0, 5.0], "note": "Lobate debris aprons; lineated valley fill", "src": "SWIM consensus (swim.psi.edu)"},
+    {"id": "w-protonilus", "name": "Protonilus Mensae aprons", "lat": 42.0, "lon": 330.0, "certainty": "B",
+     "depth_to_ice_m": [1.0, 5.0], "note": "Dichotomy-boundary ice deposits", "src": "SWIM consensus (swim.psi.edu)"},
+    {"id": "w-nilosyrtis", "name": "Nilosyrtis Mensae mantling", "lat": 34.0, "lon": 302.0, "certainty": "B",
+     "depth_to_ice_m": [2.0, 10.0], "note": "Ice-rich latitude-dependent mantle remnants", "src": "SWIM consensus (swim.psi.edu)"},
+    {"id": "w-utopia", "name": "Western Utopia Planitia buried ice", "lat": 46.0, "lon": 112.0, "certainty": "B",
+     "depth_to_ice_m": [1.0, 8.0], "note": "Radar-observed subsurface interfaces reported by orbital sounding", "src": "SWIM consensus (swim.psi.edu); SHARAD literature"},
+    {"id": "w-phlegra", "name": "Phlegra Montes glacial deposits", "lat": 30.5, "lon": 159.0, "certainty": "C",
+     "depth_to_ice_m": [5.0, 15.0], "note": "Cold-based glacial features", "src": "SWIM consensus (swim.psi.edu)"},
+    {"id": "w-hellas-nw", "name": "Hellas NW rim glacial complex", "lat": -38.0, "lon": 85.0, "certainty": "C",
+     "depth_to_ice_m": [5.0, 20.0], "note": "Southern-hemisphere analog ice complex", "src": "SWIM consensus (swim.psi.edu)"},
+]
+
+# ------------------------------------------------------------- documented storm events
+storm_events = [
+    {"id": "my25-2001-pede", "name": "MY25 planet-encircling dust event (2001)", "kind": "dust", "mars_year": 25,
+     "start": "2001-06", "end": "2001-10", "severity": "planet-encircling",
+     "summary": "Classic 2001 global dust storm obscuring the whole planet for months.",
+     "src": "NASA/JPL/ASU dust storm record"},
+    {"id": "my28-2007-regional", "name": "MY28 regional dust event (2007)", "kind": "dust", "mars_year": 28,
+     "start": "2007-06", "end": "2007-08", "severity": "regional",
+     "summary": "June-July 2007 dust event that reduced both MER rovers' power.", "src": "NASA/JPL MER reports"},
+    {"id": "my34-2018-pede", "name": "MY34 planet-encircling dust event (2018)", "kind": "dust", "mars_year": 34,
+     "start": "2018-05", "end": "2018-09", "severity": "planet-encircling (MY34-class)",
+     "summary": "The 2018 global storm that ended Opportunity's mission; observed in detail by MSL/Curiosity.",
+     "src": "NASA/JPL mission reports; MY34 storm literature"},
+    {"id": "sep-2017-09-10", "name": "10 September 2017 solar particle event", "kind": "sep", "mars_year": None,
+     "start": "2017-09-10", "end": "2017-09-14", "severity": "X-class-driven SEP",
+     "summary": "Large solar energetic particle event detected at Mars by MSL/RAD during the Sept 2017 solar activity.",
+     "src": "MSL RAD team reports (Zeitlin/Guo et al., 2018-era publications)"},
+]
+
+# ------------------------------------------------------------- dataset catalog
+datasets = [
+    {"id": "ds-ctx-murray", "name": "Global CTX Mosaic (v01)", "org": "Caltech Murray Lab", "res_m": 5, "url": "https://murray-lab.caltech.edu/CTX/", "note": "Seamless 5 m/px Mars basemap"},
+    {"id": "ds-hirise-dtm", "name": "HiRISE Digital Terrain Models", "org": "NASA PDS / USGS Astrogeology", "res_m": 1, "url": "https://astrogeology.usgs.gov", "note": "Sub-meter/regional precision DEMs"},
+    {"id": "ds-themis", "name": "THEMIS IR day/night mosaics", "org": "Arizona State University", "res_m": 100, "url": "https://themis.asu.edu", "note": "Thermal inertia global layers"},
+    {"id": "ds-mola-megdr", "name": "MOLA MEGDR 4 ppd global DEM", "org": "NASA PDS Geosciences Node", "res_m": 463, "url": "https://pds-geosciences.wustl.edu", "note": "Standard global topography product"},
+    {"id": "ds-mdim21", "name": "Viking MDIM 2.1", "org": "USGS Astrogeology", "res_m": 232, "url": "https://astrogeology.usgs.gov", "note": "Global color mosaic"},
+    {"id": "ds-sim3292", "name": "Geologic Map of Mars SIM 3292", "org": "USGS", "res_m": None, "url": "https://pubs.usgs.gov/sim/3292/", "note": "Interactive geologic units (Tanaka et al. 2014)"},
+    {"id": "ds-swim", "name": "Subsurface Water Ice Mapping (SWIM)", "org": "NASA/JPL/PSI", "res_m": None, "url": "https://swim.psi.edu", "note": "Consensus ice maps and depth-to-ice"},
+    {"id": "ds-gazetteer", "name": "Gazetteer of Planetary Nomenclature (Mars)", "org": "USGS/IAU", "res_m": None, "url": "https://planetarynames.wr.usgs.gov/", "note": "Thousands of approved feature names"},
+    {"id": "ds-perseverance-raw", "name": "Perseverance Raw Images", "org": "NASA/JPL-Caltech", "res_m": None, "url": "https://mars.nasa.gov/raw_images/", "note": "Daily raw image feed (JSON/RSS at connector time)"},
+    {"id": "ds-curiosity-raw", "name": "Curiosity Raw Images", "org": "NASA/JPL-Caltech/MSSS", "res_m": None, "url": "https://mars.nasa/msl/raw/", "note": "MSL raw image gallery"},
+    {"id": "ds-crism", "name": "CRISM targeted reduced data", "org": "NASA PDS", "res_m": None, "url": "https://pds-geosciences.wustl.edu", "note": "Visible-NIR hyperspectral observations"},
+    {"id": "ds-marsis-sharad", "name": "MARSIS / SHARAD sounding data", "org": "ESA / NASA PDS", "res_m": None, "url": "https://www.esa.int", "note": "Subsurface radar soundings"},
+]
+
+# ------------------------------------------------------------- presence agents [SIM]
+presence_agents = [
+    {"id": "crew-01", "name": "A. Reyes", "kind": "crew", "role": "Commander", "lat": 45.0, "lon": 190.0, "loop": [[45.0, 190.0], [45.4, 190.6], [44.8, 191.2], [45.2, 189.6]], "speed_km_sol": 8},
+    {"id": "crew-02", "name": "K. Osei", "kind": "crew", "role": "Field Geologist", "lat": 18.44, "lon": 77.55, "loop": [[18.44, 77.55], [18.47, 77.6], [18.42, 77.62], [18.45, 77.5]], "speed_km_sol": 6},
+    {"id": "crew-03", "name": "S. Ito", "kind": "crew", "role": "Medical Officer", "lat": 45.0, "lon": 190.0, "loop": [[45.0, 190.0], [45.2, 190.3], [44.9, 190.5]], "speed_km_sol": 4},
+    {"id": "crew-04", "name": "M. Novak", "kind": "crew", "role": "Engineer", "lat": 45.1, "lon": 189.8, "loop": [[45.1, 189.8], [45.3, 190.0], [45.0, 189.9]], "speed_km_sol": 5},
+    {"id": "crew-05", "name": "L. Duarte", "kind": "crew", "role": "Biologist", "lat": 18.45, "lon": 77.5, "loop": [[18.45, 77.5], [18.43, 77.52]], "speed_km_sol": 3},
+    {"id": "crew-06", "name": "T. Kowalski", "kind": "crew", "role": "Pilot", "lat": 45.2, "lon": 190.4, "loop": [[45.2, 190.4], [45.0, 190.2]], "speed_km_sol": 7},
+    {"id": "rover-01", "name": "ARES-1", "kind": "rover", "role": "Pressurized rover", "lat": 45.0, "lon": 190.5, "loop": [[45.0, 190.5], [45.6, 191.0], [45.3, 189.8], [44.9, 190.2], [45.1, 190.8]], "speed_km_sol": 40},
+    {"id": "rover-02", "name": "Scout-2", "kind": "rover", "role": "Unpressurized scout", "lat": 18.44, "lon": 77.5, "loop": [[18.44, 77.5], [18.48, 77.56], [18.42, 77.58]], "speed_km_sol": 25},
+    {"id": "hab-01", "name": "Arcadia Base", "kind": "habitat", "role": "Primary habitat", "lat": 45.0, "lon": 190.0, "loop": [], "speed_km_sol": 0},
+    {"id": "hab-02", "name": "Jezero Forward Camp", "kind": "habitat", "role": "Field habitat", "lat": 18.45, "lon": 77.52, "loop": [], "speed_km_sol": 0},
+]
+
+# ------------------------------------------------------------- HiRISE insets + rover regions
+hirise_insets = [
+    {"name": "Jezero delta", "lat": 18.44, "lon": 77.6, "res_m": 0.3},
+    {"name": "Gale crater floor", "lat": -4.6, "lon": 137.4, "res_m": 0.3},
+    {"name": "Victoria crater", "lat": -2.05, "lon": 354.5, "res_m": 0.3},
+    {"name": "Eberswalde delta", "lat": -21.9, "lon": 326.7, "res_m": 0.3},
+    {"name": "Holden fan", "lat": -26.0, "lon": 325.0, "res_m": 0.3},
+    {"name": "Palikir crater RSL", "lat": -41.6, "lon": 317.0, "res_m": 0.3},
+    {"name": "Korolev ice mound", "lat": 72.8, "lon": 164.6, "res_m": 0.3},
+    {"name": "Mawrth Vallis stratigraphy", "lat": 22.0, "lon": 343.0, "res_m": 0.3},
+]
+rover_regions = {
+    "Perseverance": {"bbox": [18.1, 77.1, 18.8, 77.9], "site": "Jezero crater"},
+    "Curiosity": {"bbox": [-5.8, 137.0, -4.3, 138.0], "site": "Gale crater / Mt Sharp"},
+    "Opportunity": {"bbox": [-2.6, 353.8, -1.2, 355.2], "site": "Meridiani Planum"},
+    "Spirit": {"bbox": [-15.4, 175.0, -14.4, 176.0], "site": "Gusev crater"},
+}
+
+w("gazetteer_curated.json", features)
+w("landing_sites.json", landing_sites)
+w("science_layers.json", layers)
+w("observations.json", observations)
+w("panoramas.json", panoramas)
+w("povs.json", povs)
+w("shelters.json", shelters)
+w("water.json", water)
+w("storm_events.json", storm_events)
+w("datasets.json", datasets)
+w("presence_agents.json", presence_agents)
+w("hirise_insets.json", hirise_insets)
+w("rover_regions.json", rover_regions)
+print("all seeds written to", SEEDS)

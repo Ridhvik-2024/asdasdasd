@@ -1,0 +1,92 @@
+[
+ {
+  "id": "pov-jezero-oeb",
+  "name": "Octavia E. Butler landing floor",
+  "region": "Jezero",
+  "lat": 18.4447,
+  "lon": 77.4508,
+  "heading_deg": 130,
+  "note": "Perseverance touchdown point; flat crater floor"
+ },
+ {
+  "id": "pov-jezero-delta",
+  "name": "Delta front overlook",
+  "region": "Jezero",
+  "lat": 18.44,
+  "lon": 77.6,
+  "heading_deg": 250,
+  "note": "Looking west across the preserved delta scarp"
+ },
+ {
+  "id": "pov-jezero-kodiak",
+  "name": "Kodiak butte viewpoint",
+  "region": "Jezero",
+  "lat": 18.42,
+  "lon": 77.7,
+  "heading_deg": 290,
+  "note": "Isolated butte recording delta stratigraphy"
+ },
+ {
+  "id": "pov-gale-bradbury",
+  "name": "Bradbury Landing",
+  "region": "Gale",
+  "lat": -4.5895,
+  "lon": 137.4417,
+  "heading_deg": 210,
+  "note": "Curiosity touchdown; Aeolis Mons on the horizon"
+ },
+ {
+  "id": "pov-gale-teal",
+  "name": "Teal Ridge (Vera Rubin ridge flank)",
+  "region": "Gale",
+  "lat": -4.7,
+  "lon": 137.4,
+  "heading_deg": 180,
+  "note": "Hematite-bearing ridge unit"
+ },
+ {
+  "id": "pov-meridiani-eagle",
+  "name": "Eagle crater rim",
+  "region": "Meridiani",
+  "lat": -1.95,
+  "lon": 354.47,
+  "heading_deg": 160,
+  "note": "Opportunity's first crater; hematite plains"
+ },
+ {
+  "id": "pov-meridiani-capeverde",
+  "name": "Cape Verde, Victoria crater",
+  "region": "Meridiani",
+  "lat": -2.05,
+  "lon": 354.5,
+  "heading_deg": 320,
+  "note": "Cliffed crater promontory"
+ },
+ {
+  "id": "pov-gusev-husband",
+  "name": "Husband Hill summit",
+  "region": "Gusev",
+  "lat": -14.62,
+  "lon": 175.53,
+  "heading_deg": 20,
+  "note": "Columbia Hills high point"
+ },
+ {
+  "id": "pov-elysium-insight",
+  "name": "Homestead Hollow (InSight)",
+  "region": "Elysium",
+  "lat": 4.502,
+  "lon": 135.623,
+  "heading_deg": 45,
+  "note": "Smooth plains lander site"
+ },
+ {
+  "id": "pov-elysium-cerberus",
+  "name": "Cerberus Fossae overlook",
+  "region": "Elysium",
+  "lat": 6.5,
+  "lon": 160.0,
+  "heading_deg": 90,
+  "note": "Seismically active graben walls"
+ }
+]

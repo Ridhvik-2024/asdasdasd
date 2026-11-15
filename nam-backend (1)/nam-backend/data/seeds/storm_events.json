@@ -1,0 +1,46 @@
+[
+ {
+  "id": "my25-2001-pede",
+  "name": "MY25 planet-encircling dust event (2001)",
+  "kind": "dust",
+  "mars_year": 25,
+  "start": "2001-06",
+  "end": "2001-10",
+  "severity": "planet-encircling",
+  "summary": "Classic 2001 global dust storm obscuring the whole planet for months.",
+  "src": "NASA/JPL/ASU dust storm record"
+ },
+ {
+  "id": "my28-2007-regional",
+  "name": "MY28 regional dust event (2007)",
+  "kind": "dust",
+  "mars_year": 28,
+  "start": "2007-06",
+  "end": "2007-08",
+  "severity": "regional",
+  "summary": "June-July 2007 dust event that reduced both MER rovers' power.",
+  "src": "NASA/JPL MER reports"
+ },
+ {
+  "id": "my34-2018-pede",
+  "name": "MY34 planet-encircling dust event (2018)",
+  "kind": "dust",
+  "mars_year": 34,
+  "start": "2018-05",
+  "end": "2018-09",
+  "severity": "planet-encircling (MY34-class)",
+  "summary": "The 2018 global storm that ended Opportunity's mission; observed in detail by MSL/Curiosity.",
+  "src": "NASA/JPL mission reports; MY34 storm literature"
+ },
+ {
+  "id": "sep-2017-09-10",
+  "name": "10 September 2017 solar particle event",
+  "kind": "sep",
+  "mars_year": null,
+  "start": "2017-09-10",
+  "end": "2017-09-14",
+  "severity": "X-class-driven SEP",
+  "summary": "Large solar energetic particle event detected at Mars by MSL/RAD during the Sept 2017 solar activity.",
+  "src": "MSL RAD team reports (Zeitlin/Guo et al., 2018-era publications)"
+ }
+]

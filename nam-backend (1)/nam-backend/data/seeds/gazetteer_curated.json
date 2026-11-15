@@ -1,0 +1,582 @@
+[
+ {
+  "id": "olympus-mons",
+  "name": "Olympus Mons",
+  "type": "shield volcano",
+  "lat": 18.65,
+  "lon": 133.8,
+  "diameter_km": 600,
+  "note": "Largest volcano in the solar system; ~21.9 km above datum.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "ascraeus-mons",
+  "name": "Ascraeus Mons",
+  "type": "shield volcano",
+  "lat": 11.8,
+  "lon": 255.9,
+  "diameter_km": 460,
+  "note": "Northernmost of the Tharsis Montes.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "pavonis-mons",
+  "name": "Pavonis Mons",
+  "type": "shield volcano",
+  "lat": 0.8,
+  "lon": 247.0,
+  "diameter_km": 375,
+  "note": "Middle Tharsis Montes volcano, straddles the equator.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "arsia-mons",
+  "name": "Arsia Mons",
+  "type": "shield volcano",
+  "lat": -8.35,
+  "lon": 240.0,
+  "diameter_km": 475,
+  "note": "Southernmost Tharsis Montes volcano; skylight candidates on flanks.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "alba-patera",
+  "name": "Alba Mons",
+  "type": "shield volcano",
+  "lat": 40.5,
+  "lon": 250.1,
+  "diameter_km": 1600,
+  "note": "Low-profile, enormous shield north of Tharsis.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "elysium-mons",
+  "name": "Elysium Mons",
+  "type": "shield volcano",
+  "lat": 25.0,
+  "lon": 147.2,
+  "diameter_km": 240,
+  "note": "Principal volcano of Elysium Planitia.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "hecates-tholus",
+  "name": "Hecates Tholus",
+  "type": "volcano",
+  "lat": 32.1,
+  "lon": 150.2,
+  "diameter_km": 180,
+  "note": "Small Elysium-region volcano with possible glacial deposits.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "ceraunius-tholus",
+  "name": "Ceraunius Tholus",
+  "type": "volcano",
+  "lat": 24.6,
+  "lon": 263.3,
+  "diameter_km": 130,
+  "note": "Uranius group tholus, northern Tharsis.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "tharsis-tholus",
+  "name": "Tharsis Tholus",
+  "type": "volcano",
+  "lat": 13.5,
+  "lon": 262.5,
+  "diameter_km": 155,
+  "note": "Collapsed tholus east of Ascraeus.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "valles-marineris",
+  "name": "Valles Marineris",
+  "type": "canyon system",
+  "lat": -11.0,
+  "lon": 290.0,
+  "diameter_km": null,
+  "note": "The great equatorial canyon system, >4000 km long.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "noctis-labyrinthus",
+  "name": "Noctis Labyrinthus",
+  "type": "chaos terrain",
+  "lat": -6.8,
+  "lon": 256.0,
+  "diameter_km": null,
+  "note": "Intersecting graben at the western end of Valles Marineris.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "ius-chasma",
+  "name": "Ius Chasma",
+  "type": "canyon",
+  "lat": -7.5,
+  "lon": 275.5,
+  "diameter_km": null,
+  "note": "Western Tithonium-Ius trough pair.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "tithonium-chasma",
+  "name": "Tithonium Chasma",
+  "type": "canyon",
+  "lat": -6.5,
+  "lon": 273.5,
+  "diameter_km": null,
+  "note": "Northern parallel trough of the western canyon.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "candor-chasma",
+  "name": "Candor Chasma",
+  "type": "canyon",
+  "lat": -6.5,
+  "lon": 284.0,
+  "diameter_km": null,
+  "note": "Deep central canyon with interior layered deposits and sulfates.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "ophir-chasma",
+  "name": "Ophir Chasma",
+  "type": "canyon",
+  "lat": -4.0,
+  "lon": 285.0,
+  "diameter_km": null,
+  "note": "Central canyon north of Candor.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "melas-chasma",
+  "name": "Melas Chasma",
+  "type": "canyon",
+  "lat": -10.3,
+  "lon": 289.5,
+  "diameter_km": null,
+  "note": "Deepest section of the central Valles Marineris.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "capri-chasma",
+  "name": "Capri Chasma",
+  "type": "canyon",
+  "lat": -12.9,
+  "lon": 307.0,
+  "diameter_km": null,
+  "note": "Eastern canyon sector.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "eos-chasma",
+  "name": "Eos Chasma",
+  "type": "canyon",
+  "lat": -11.5,
+  "lon": 315.0,
+  "diameter_km": null,
+  "note": "Eastern canyon leading toward chaos terrain.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "ganges-chasma",
+  "name": "Ganges Chasma",
+  "type": "canyon",
+  "lat": -8.2,
+  "lon": 315.3,
+  "diameter_km": null,
+  "note": "Northeastward branch with alcoves.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "juventae-chasma",
+  "name": "Juventae Chasma",
+  "type": "chaos terrain",
+  "lat": -4.5,
+  "lon": 297.6,
+  "diameter_km": null,
+  "note": "Collapsed basin north of Ophir; sulfate mounds.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "hebes-chasma",
+  "name": "Hebes Chasma",
+  "type": "canyon",
+  "lat": -1.0,
+  "lon": 283.4,
+  "diameter_km": null,
+  "note": "Isolated closed canyon north of the main system.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "echus-chasma",
+  "name": "Echus Chasma",
+  "type": "canyon",
+  "lat": 1.0,
+  "lon": 279.0,
+  "diameter_km": null,
+  "note": "Source region of Kasei Valles outflow.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "hellas-planitia",
+  "name": "Hellas Planitia",
+  "type": "impact basin",
+  "lat": -42.4,
+  "lon": 70.5,
+  "diameter_km": 2200,
+  "note": "Largest confirmed impact basin on Mars, floor ~7 km deep.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "argyre-planitia",
+  "name": "Argyre Planitia",
+  "type": "impact basin",
+  "lat": -50.0,
+  "lon": 318.0,
+  "diameter_km": 1800,
+  "note": "Southern highlands multi-ring impact basin.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "isidis-planitia",
+  "name": "Isidis Planitia",
+  "type": "impact basin",
+  "lat": 13.0,
+  "lon": 87.5,
+  "diameter_km": 1500,
+  "note": "Ancient basin between highlands and Syrtis Major.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "utopia-planitia",
+  "name": "Utopia Planitia",
+  "type": "plain",
+  "lat": 46.7,
+  "lon": 117.5,
+  "diameter_km": null,
+  "note": "Northern lowland plain; largest visible impact basin region.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "arcadia-planitia",
+  "name": "Arcadia Planitia",
+  "type": "plain",
+  "lat": 45.0,
+  "lon": 190.0,
+  "diameter_km": null,
+  "note": "Smooth northern plain; prime shallow-ice candidate region.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "amazonis-planitia",
+  "name": "Amazonis Planitia",
+  "type": "plain",
+  "lat": 25.0,
+  "lon": 198.0,
+  "diameter_km": null,
+  "note": "Extremely smooth northern lowlands.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "elysium-planitia",
+  "name": "Elysium Planitia",
+  "type": "plain",
+  "lat": 5.0,
+  "lon": 140.0,
+  "diameter_km": null,
+  "note": "InSight landing region; recent volcanic and fluvial features.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "chryse-planitia",
+  "name": "Chryse Planitia",
+  "type": "plain",
+  "lat": 22.0,
+  "lon": 312.0,
+  "diameter_km": null,
+  "note": "Outflow-channel mouth plain; Viking 1 landing region.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "acidalia-planitia",
+  "name": "Acidalia Planitia",
+  "type": "plain",
+  "lat": 45.0,
+  "lon": 340.0,
+  "diameter_km": null,
+  "note": "Northern lowland plain north of Valles Marineris outfalls.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "meridiani-planum",
+  "name": "Meridiani Planum",
+  "type": "plain",
+  "lat": -2.0,
+  "lon": 354.0,
+  "diameter_km": null,
+  "note": "Hematite-rich plains; Opportunity traverse region.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "gale",
+  "name": "Gale",
+  "type": "crater",
+  "lat": -5.4,
+  "lon": 137.8,
+  "diameter_km": 154,
+  "note": "Landing crater of Curiosity; central mound (Aeolis Mons).",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "jezero",
+  "name": "Jezero",
+  "type": "crater",
+  "lat": 18.4,
+  "lon": 77.7,
+  "diameter_km": 45,
+  "note": "Perseverance landing crater with preserved delta.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "gusev",
+  "name": "Gusev",
+  "type": "crater",
+  "lat": -14.6,
+  "lon": 175.5,
+  "diameter_km": 166,
+  "note": "Spirit landing crater; Ma'adim Vallis channel enters it.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "endeavour",
+  "name": "Endeavour",
+  "type": "crater",
+  "lat": -2.28,
+  "lon": 354.5,
+  "diameter_km": 22,
+  "note": " Opportunity's final traverse destination, Noachian rim.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "victoria",
+  "name": "Victoria",
+  "type": "crater",
+  "lat": -2.05,
+  "lon": 354.5,
+  "diameter_km": 0.8,
+  "note": "Opportunity circumnavigated this scalloped crater.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "holden",
+  "name": "Holden",
+  "type": "crater",
+  "lat": -26.0,
+  "lon": 325.0,
+  "diameter_km": 154,
+  "note": "Candidate closed-basin paleolake with fan deposits.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "eberswalde",
+  "name": "Eberswalde",
+  "type": "crater",
+  "lat": -21.9,
+  "lon": 326.7,
+  "diameter_km": 65,
+  "note": "Preserved fluvial delta; MSL finalist site.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "mawrth-vallis",
+  "name": "Mawrth Vallis",
+  "type": "outflow channel",
+  "lat": 22.0,
+  "lon": 343.0,
+  "diameter_km": null,
+  "note": "Deep phyllosilicate stratigraphy; ExoMars candidate site.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "ares-vallis",
+  "name": "Ares Vallis",
+  "type": "outflow channel",
+  "lat": 17.5,
+  "lon": 322.0,
+  "diameter_km": null,
+  "note": "Catastrophic outflow channel into Chryse; Pathfinder region.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "kasei-valles",
+  "name": "Kasei Valles",
+  "type": "outflow channel",
+  "lat": 12.0,
+  "lon": 295.0,
+  "diameter_km": null,
+  "note": "Largest outflow channel system.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "maadim-vallis",
+  "name": "Ma'adim Vallis",
+  "type": "valley",
+  "lat": -19.0,
+  "lon": 178.0,
+  "diameter_km": null,
+  "note": "Channel that fed Gusev crater.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "nanedi-vallis",
+  "name": "Nanedi Vallis",
+  "type": "valley",
+  "lat": 5.5,
+  "lon": 314.0,
+  "diameter_km": null,
+  "note": "Inscribed valley with inner channel, classic fluvial form.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "nirgal-vallis",
+  "name": "Nirgal Vallis",
+  "type": "valley",
+  "lat": -28.0,
+  "lon": 317.0,
+  "diameter_km": null,
+  "note": "Branching valley in the southern highlands.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "dao-vallis",
+  "name": "Dao Vallis",
+  "type": "valley",
+  "lat": -36.0,
+  "lon": 88.0,
+  "diameter_km": null,
+  "note": "Hellas rim valley possibly fed by snowmelt.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "nilosyrtis-mensae",
+  "name": "Nilosyrtis Mensae",
+  "type": "mensae",
+  "lat": 34.0,
+  "lon": 302.0,
+  "diameter_km": null,
+  "note": "Dichotomy-boundary knobs; ice-rich mantling.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "deuteronilus-mensae",
+  "name": "Deuteronilus Mensae",
+  "type": "mensae",
+  "lat": 38.5,
+  "lon": 338.0,
+  "diameter_km": null,
+  "note": "Glacial ice-rich mesas on the dichotomy boundary.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "protonilus-mensae",
+  "name": "Protonilus Mensae",
+  "type": "mensae",
+  "lat": 42.0,
+  "lon": 330.0,
+  "diameter_km": null,
+  "note": "Lobate debris aprons; shallow ice.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "medusae-fossae",
+  "name": "Medusae Fossae",
+  "type": "formation",
+  "lat": -3.0,
+  "lon": 165.0,
+  "diameter_km": null,
+  "note": "Soft, wind-eroded equatorial ash/tuff unit with yardangs.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "cerberus-fossae",
+  "name": "Cerberus Fossae",
+  "type": "fossae",
+  "lat": 6.5,
+  "lon": 160.0,
+  "diameter_km": null,
+  "note": "Active graben system; source of many InSight marsquakes.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "cydonia-mensae",
+  "name": "Cydonia Mensae",
+  "type": "mensae",
+  "lat": 40.75,
+  "lon": 350.5,
+  "diameter_km": null,
+  "note": "Knob-and-mesa terrain on the dichotomy boundary.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "korolev",
+  "name": "Korolev",
+  "type": "crater",
+  "lat": 72.8,
+  "lon": 164.6,
+  "diameter_km": 82,
+  "note": "Deep northern crater holding a permanent ice mound.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "louth",
+  "name": "Louth",
+  "type": "crater",
+  "lat": 70.2,
+  "lon": 247.7,
+  "diameter_km": 36,
+  "note": "High-latitude crater with permanent water-ice cap.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "planum-boreum",
+  "name": "Planum Boreum",
+  "type": "polar cap",
+  "lat": 87.0,
+  "lon": 0.0,
+  "diameter_km": null,
+  "note": "Northern permanent ice cap and layered deposits.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "planum-australe",
+  "name": "Planum Australe",
+  "type": "polar cap",
+  "lat": -87.0,
+  "lon": 0.0,
+  "diameter_km": null,
+  "note": "Southern permanent ice cap.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "syrtis-major",
+  "name": "Syrtis Major Planum",
+  "type": "plain",
+  "lat": 8.0,
+  "lon": 290.0,
+  "diameter_km": null,
+  "note": "Dark basaltic shield plain west of Isidis.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ },
+ {
+  "id": "tartarus-colles",
+  "name": "Tartarus Colles",
+  "type": "colles",
+  "lat": 25.0,
+  "lon": 150.5,
+  "diameter_km": null,
+  "note": "Knob field east of Elysium Mons.",
+  "src": "USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov)"
+ }
+]

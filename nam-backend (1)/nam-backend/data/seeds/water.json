@@ -1,0 +1,106 @@
+[
+ {
+  "id": "w-arcadia",
+  "name": "Arcadia Planitia shallow ice",
+  "lat": 45.0,
+  "lon": 190.0,
+  "certainty": "A",
+  "depth_to_ice_m": [
+   0.5,
+   2.0
+  ],
+  "note": "Prime mid-latitude drilling candidate; smooth, safe terrain",
+  "src": "SWIM consensus (swim.psi.edu); published mid-latitude ice studies"
+ },
+ {
+  "id": "w-erebus",
+  "name": "Erebus Montes ice-rich terrain",
+  "lat": 45.0,
+  "lon": 210.0,
+  "certainty": "B",
+  "depth_to_ice_m": [
+   1.0,
+   5.0
+  ],
+  "note": "Knobby terrain with ice-exposing ejecta",
+  "src": "SWIM consensus (swim.psi.edu)"
+ },
+ {
+  "id": "w-deuteronilus",
+  "name": "Deuteronilus Mensae glacial complex",
+  "lat": 38.5,
+  "lon": 338.0,
+  "certainty": "A",
+  "depth_to_ice_m": [
+   1.0,
+   5.0
+  ],
+  "note": "Lobate debris aprons; lineated valley fill",
+  "src": "SWIM consensus (swim.psi.edu)"
+ },
+ {
+  "id": "w-protonilus",
+  "name": "Protonilus Mensae aprons",
+  "lat": 42.0,
+  "lon": 330.0,
+  "certainty": "B",
+  "depth_to_ice_m": [
+   1.0,
+   5.0
+  ],
+  "note": "Dichotomy-boundary ice deposits",
+  "src": "SWIM consensus (swim.psi.edu)"
+ },
+ {
+  "id": "w-nilosyrtis",
+  "name": "Nilosyrtis Mensae mantling",
+  "lat": 34.0,
+  "lon": 302.0,
+  "certainty": "B",
+  "depth_to_ice_m": [
+   2.0,
+   10.0
+  ],
+  "note": "Ice-rich latitude-dependent mantle remnants",
+  "src": "SWIM consensus (swim.psi.edu)"
+ },
+ {
+  "id": "w-utopia",
+  "name": "Western Utopia Planitia buried ice",
+  "lat": 46.0,
+  "lon": 112.0,
+  "certainty": "B",
+  "depth_to_ice_m": [
+   1.0,
+   8.0
+  ],
+  "note": "Radar-observed subsurface interfaces reported by orbital sounding",
+  "src": "SWIM consensus (swim.psi.edu); SHARAD literature"
+ },
+ {
+  "id": "w-phlegra",
+  "name": "Phlegra Montes glacial deposits",
+  "lat": 30.5,
+  "lon": 159.0,
+  "certainty": "C",
+  "depth_to_ice_m": [
+   5.0,
+   15.0
+  ],
+  "note": "Cold-based glacial features",
+  "src": "SWIM consensus (swim.psi.edu)"
+ },
+ {
+  "id": "w-hellas-nw",
+  "name": "Hellas NW rim glacial complex",
+  "lat": -38.0,
+  "lon": 85.0,
+  "certainty": "C",
+  "depth_to_ice_m": [
+   5.0,
+   20.0
+  ],
+  "note": "Southern-hemisphere analog ice complex",
+  "src": "SWIM consensus (swim.psi.edu)"
+ }
+]

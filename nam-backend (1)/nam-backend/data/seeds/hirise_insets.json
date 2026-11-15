@@ -1,0 +1,50 @@
+[
+ {
+  "name": "Jezero delta",
+  "lat": 18.44,
+  "lon": 77.6,
+  "res_m": 0.3
+ },
+ {
+  "name": "Gale crater floor",
+  "lat": -4.6,
+  "lon": 137.4,
+  "res_m": 0.3
+ },
+ {
+  "name": "Victoria crater",
+  "lat": -2.05,
+  "lon": 354.5,
+  "res_m": 0.3
+ },
+ {
+  "name": "Eberswalde delta",
+  "lat": -21.9,
+  "lon": 326.7,
+  "res_m": 0.3
+ },
+ {
+  "name": "Holden fan",
+  "lat": -26.0,
+  "lon": 325.0,
+  "res_m": 0.3
+ },
+ {
+  "name": "Palikir crater RSL",
+  "lat": -41.6,
+  "lon": 317.0,
+  "res_m": 0.3
+ },
+ {
+  "name": "Korolev ice mound",
+  "lat": 72.8,
+  "lon": 164.6,
+  "res_m": 0.3
+ },
+ {
+  "name": "Mawrth Vallis stratigraphy",
+  "lat": 22.0,
+  "lon": 343.0,
+  "res_m": 0.3
+ }
+]

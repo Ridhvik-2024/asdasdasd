@@ -1,0 +1,259 @@
+[
+ {
+  "id": "jezero-delta-phyllosilicates",
+  "title": "Phyllosilicate-rich delta deposits in Jezero crater",
+  "lat": 18.44,
+  "lon": 77.6,
+  "mission": "MRO CRISM / Perseverance",
+  "instrument": "CRISM",
+  "summary": "Fe/Mg- and Al-rich clay minerals mapped in the Jezero western delta, targets for Perseverance sample collection.",
+  "evidence": {
+   "citation": "Ehlmann et al. (2008), Nature Geoscience - clay minerals in the Nili Fossae/Jezero region; NASA/JPL Perseverance mission reports",
+   "url": "https://science.nasa.gov/mars"
+  },
+  "tags": [
+   "phyllosilicates",
+   "delta",
+   "astrobiology"
+  ]
+ },
+ {
+  "id": "gale-habitable-lake",
+  "title": "Long-lived lacustrine environment in Gale crater",
+  "lat": -5.0,
+  "lon": 137.6,
+  "mission": "MSL Curiosity",
+  "instrument": "MASTCAM/CHEMIN",
+  "summary": "Fine-grained sedimentary rocks at Yellowknife Bay record an ancient lake with neutral-pH chemistry.",
+  "evidence": {
+   "citation": "Grotzinger et al. (2014), Science 343 - A habitable fluvio-lacustrine environment at Yellowknife Bay, Gale crater",
+   "url": null
+  },
+  "tags": [
+   "paleolake",
+   "habitability"
+  ]
+ },
+ {
+  "id": "rsl-palikir",
+  "title": "Recurring Slope Lineae in Palikir crater",
+  "lat": -41.6,
+  "lon": 317.0,
+  "mission": "MRO HiRISE",
+  "instrument": "HiRISE",
+  "summary": "Dark seasonal flows on warm steep slopes; formation mechanism remains debated (brine vs dry granular).",
+  "evidence": {
+   "citation": "McEwen et al. (2011), Science 333 - Seasonal flows on warm Martian slopes",
+   "url": "https://www.uahirise.org/"
+  },
+  "tags": [
+   "RSL",
+   "active processes"
+  ]
+ },
+ {
+  "id": "basal-ice-ultimi",
+  "title": "Bright basal reflector beneath Ultimi Scopuli ice",
+  "lat": -81.0,
+  "lon": 120.0,
+  "mission": "MARSIS / Mars Express",
+  "instrument": "MARSIS",
+  "summary": "Basal returns interpreted by some as liquid water; interpretation is actively debated in the literature.",
+  "evidence": {
+   "citation": "Orosei et al. (2018), Science 361 - Radar evidence of subglacial liquid water (interpretation contested)",
+   "url": "https://www.esa.int"
+  },
+  "tags": [
+   "ice",
+   "radar"
+  ]
+ },
+ {
+  "id": "methane-seasonal",
+  "title": "Seasonal methane variation in Gale crater",
+  "lat": -4.7,
+  "lon": 137.4,
+  "mission": "MSL Curiosity",
+  "instrument": "TLS/SAM",
+  "summary": "Background methane shows strong seasonal modulation; trace spikes observed on some sols.",
+  "evidence": {
+   "citation": "Webster et al. (2018), Science 360 - Background levels of methane show strong seasonal anomalies",
+   "url": null
+  },
+  "tags": [
+   "atmosphere",
+   "methane"
+  ]
+ },
+ {
+  "id": "organics-murray",
+  "title": "Organic molecules in 3-billion-year-old mudstone",
+  "lat": -4.7,
+  "lon": 137.4,
+  "mission": "MSL Curiosity",
+  "instrument": "SAM",
+  "summary": "Thiophenic, aromatic and aliphatic compounds released from Murray formation mudstones.",
+  "evidence": {
+   "citation": "Eigenbrode et al. (2018), Science 360 - Organic matter preserved in 3-billion-year-old mudstones",
+   "url": null
+  },
+  "tags": [
+   "organics",
+   "astrobiology"
+  ]
+ },
+ {
+  "id": "chloride-deposits",
+  "title": "Chloride-bearing mid-latitude deposits",
+  "lat": -30.0,
+  "lon": 20.0,
+  "mission": "Mars Odyssey THEMIS",
+  "instrument": "THEMIS",
+  "summary": "Hundreds of chloride salt outcrops mapped in the southern highlands, evidence of evaporitic settings.",
+  "evidence": {
+   "citation": "Osterloo et al. (2010), JGR Planets - Chloride-bearing materials in the southern highlands of Mars",
+   "url": "https://themis.asu.edu"
+  },
+  "tags": [
+   "salts",
+   "evaporite"
+  ]
+ },
+ {
+  "id": "glacier-like-forms",
+  "title": "Glacier-like forms across the mid-latitudes",
+  "lat": 38.5,
+  "lon": 338.0,
+  "mission": "Mars Express HRSC / MRO",
+  "instrument": "HRSC/CTX",
+  "summary": "Thousands of viscous flow features (lobate debris aprons, tongue-shaped glaciers) record Amazonian ice.",
+  "evidence": {
+   "citation": "Souness & Hubbard (2012), JGR Planets - An inventory and characterization of glacier-like forms on Mars",
+   "url": null
+  },
+  "tags": [
+   "glacial",
+   "ice"
+  ]
+ },
+ {
+  "id": "vm-sulfates",
+  "title": "Interior layered deposits with sulfates in Valles Marineris",
+  "lat": -6.5,
+  "lon": 284.0,
+  "mission": "Mars Express OMEGA",
+  "instrument": "OMEGA",
+  "summary": "Kieserite and other hydrated sulfates detected in Candor and other canyon interior layered deposits.",
+  "evidence": {
+   "citation": "Gendrin et al. (2005), Science 307 - Sulfates in Martian layered terrains: the OMEGA/Mars Express view",
+   "url": null
+  },
+  "tags": [
+   "sulfates",
+   "canyon"
+  ]
+ },
+ {
+  "id": "highland-gullies",
+  "title": "Gullies on crater walls",
+  "lat": -30.0,
+  "lon": 15.0,
+  "mission": "MGS MOC / MRO",
+  "instrument": "MOC/HiRISE",
+  "summary": "Alcove-channel-fan gully landforms on steep slopes; initially proposed as water-related, mechanisms debated.",
+  "evidence": {
+   "citation": "Malin & Edgett (2000), Science 288 - Evidence for recent groundwater seepage and surface runoff on Mars",
+   "url": null
+  },
+  "tags": [
+   "gullies",
+   "geomorphology"
+  ]
+ },
+ {
+  "id": "insight-seismicity",
+  "title": "Marsquakes localized at Cerberus Fossae",
+  "lat": 6.5,
+  "lon": 160.0,
+  "mission": "InSight SEIS",
+  "instrument": "SEIS",
+  "summary": "The majority of detected marsquakes originate from the Cerberus Fossae graben system.",
+  "evidence": {
+   "citation": "Giardini et al. (2020), Nature Geoscience - Seismicity of Mars; InSight mission reports",
+   "url": "https://science.nasa.gov/mars"
+  },
+  "tags": [
+   "seismicity",
+   "tectonics"
+  ]
+ },
+ {
+  "id": "utopia-zhurong",
+  "title": "Hydrous terrain indicators in Utopia Planitia",
+  "lat": 25.1,
+  "lon": 109.9,
+  "mission": "Tianwen-1 Zhurong",
+  "instrument": "NaTeCam/MarSCoDe",
+  "summary": "Zhurong rover observations of terrain in Utopia interpreted as related to past aqueous activity.",
+  "evidence": {
+   "citation": "Liu et al. (2022), Nature - Zhurong rover observations of Utopia Planitia",
+   "url": null
+  },
+  "tags": [
+   "rover",
+   "aqueous"
+  ]
+ },
+ {
+  "id": "swim-consensus",
+  "title": "Consensus subsurface ice mapping (SWIM)",
+  "lat": 45.0,
+  "lon": 190.0,
+  "mission": "SWIM project",
+  "instrument": "multi-dataset consensus",
+  "summary": "Aggregated radar, geomorphic, thermal and neutron evidence for shallow ice across the mid-latitudes.",
+  "evidence": {
+   "citation": "SWIM project (NASA/JPL/PSI) consensus maps",
+   "url": "https://swim.psi.edu"
+  },
+  "tags": [
+   "ice",
+   "resource"
+  ]
+ },
+ {
+  "id": "meridiani-hematite",
+  "title": "Hematite 'blueberry' concretions at Meridiani Planum",
+  "lat": -1.95,
+  "lon": 354.47,
+  "mission": "MER-B Opportunity",
+  "instrument": "Mini-TES/Pancam",
+  "summary": "Spherical hematite concretions and sulfate sandstones record an ancient evaporite environment.",
+  "evidence": {
+   "citation": "Squyres et al. (2004), Science 306 - Opportunity at Meridiani Planum",
+   "url": null
+  },
+  "tags": [
+   "rover",
+   "hematite",
+   "evaporite"
+  ]
+ },
+ {
+  "id": "gediz-vallis-ridge",
+  "title": "Gediz Vallis Ridge debris-flow deposits",
+  "lat": -4.6,
+  "lon": 137.4,
+  "mission": "MSL Curiosity",
+  "instrument": "Mastcam/Navcam",
+  "summary": "Curiosity imaged and drove through boulder-rich ridges interpreted as debris flows from Mt Sharp's upper slopes.",
+  "evidence": {
+   "citation": "NASA/JPL-Caltech/MSSS mission updates (2023-2024) on Gediz Vallis Ridge",
+   "url": "https://mars.nasa.gov/"
+  },
+  "tags": [
+   "rover",
+   "geomorphology"
+  ]
+ }
+]

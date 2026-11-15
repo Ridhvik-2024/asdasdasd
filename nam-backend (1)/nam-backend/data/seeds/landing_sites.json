@@ -1,0 +1,106 @@
+[
+ {
+  "id": "viking-1",
+  "name": "Viking 1 (Chryse Planitia)",
+  "mission": "Viking 1",
+  "kind": "lander",
+  "lat": 22.697,
+  "lon": 311.78,
+  "date": "1976-07-20",
+  "src": "NASA/JPL mission documentation"
+ },
+ {
+  "id": "viking-2",
+  "name": "Viking 2 (Utopia Planitia)",
+  "mission": "Viking 2",
+  "kind": "lander",
+  "lat": 47.97,
+  "lon": 225.74,
+  "date": "1976-09-03",
+  "src": "NASA/JPL mission documentation"
+ },
+ {
+  "id": "pathfinder",
+  "name": "Mars Pathfinder (Ares Vallis)",
+  "mission": "Mars Pathfinder",
+  "kind": "lander+rover",
+  "lat": 19.13,
+  "lon": 326.78,
+  "date": "1997-07-04",
+  "src": "NASA/JPL mission documentation"
+ },
+ {
+  "id": "spirit",
+  "name": "Spirit (Gusev crater)",
+  "mission": "MER-A Spirit",
+  "kind": "rover",
+  "lat": -14.609,
+  "lon": 175.472,
+  "date": "2004-01-04",
+  "traverse_km": 7.7,
+  "src": "NASA/JPL MER documentation"
+ },
+ {
+  "id": "opportunity",
+  "name": "Opportunity (Meridiani Planum)",
+  "mission": "MER-B Opportunity",
+  "kind": "rover",
+  "lat": -1.946,
+  "lon": 354.473,
+  "date": "2004-01-25",
+  "traverse_km": 45.0,
+  "src": "NASA/JPL MER documentation"
+ },
+ {
+  "id": "phoenix",
+  "name": "Phoenix (Green Valley, Vastitas Borealis)",
+  "mission": "Phoenix",
+  "kind": "lander",
+  "lat": 68.22,
+  "lon": 234.25,
+  "date": "2008-05-25",
+  "src": "NASA/JPL/University of Arizona"
+ },
+ {
+  "id": "curiosity",
+  "name": "Curiosity (Gale crater, Bradbury Landing)",
+  "mission": "MSL Curiosity",
+  "kind": "rover",
+  "lat": -4.5895,
+  "lon": 137.4417,
+  "date": "2012-08-06",
+  "traverse_km": 31.0,
+  "src": "NASA/JPL-Caltech MSL documentation"
+ },
+ {
+  "id": "insight",
+  "name": "InSight (Homestead Hollow, Elysium Planitia)",
+  "mission": "InSight",
+  "kind": "lander",
+  "lat": 4.502,
+  "lon": 135.623,
+  "date": "2018-11-26",
+  "src": "NASA/JPL InSight documentation"
+ },
+ {
+  "id": "perseverance",
+  "name": "Perseverance (Jezero crater, Octavia E. Butler)",
+  "mission": "Mars 2020 Perseverance",
+  "kind": "rover",
+  "lat": 18.4447,
+  "lon": 77.4508,
+  "date": "2021-02-18",
+  "traverse_km": 20.0,
+  "src": "NASA/JPL-Caltech Mars 2020 documentation"
+ },
+ {
+  "id": "zhurong",
+  "name": "Zhurong (Utopia Planitia)",
+  "mission": "Tianwen-1 Zhurong",
+  "kind": "rover",
+  "lat": 25.066,
+  "lon": 109.925,
+  "date": "2021-05-14",
+  "src": "CNSA published landing coordinates"
+ }
+]

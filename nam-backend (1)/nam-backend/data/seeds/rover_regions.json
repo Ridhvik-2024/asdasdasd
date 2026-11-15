@@ -1,0 +1,38 @@
+{
+ "Perseverance": {
+  "bbox": [
+   18.1,
+   77.1,
+   18.8,
+   77.9
+  ],
+  "site": "Jezero crater"
+ },
+ "Curiosity": {
+  "bbox": [
+   -5.8,
+   137.0,
+   -4.3,
+   138.0
+  ],
+  "site": "Gale crater / Mt Sharp"
+ },
+ "Opportunity": {
+  "bbox": [
+   -2.6,
+   353.8,
+   -1.2,
+   355.2
+  ],
+  "site": "Meridiani Planum"
+ },
+ "Spirit": {
+  "bbox": [
+   -15.4,
+   175.0,
+   -14.4,
+   176.0
+  ],
+  "site": "Gusev crater"
+ }
+}

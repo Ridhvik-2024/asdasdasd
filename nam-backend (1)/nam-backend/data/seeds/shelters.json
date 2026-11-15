@@ -1,0 +1,134 @@
+[
+ {
+  "id": "sh-arsia-skylight",
+  "name": "Arsia Mons SW flank skylight chain",
+  "type": "lava-tube skylight",
+  "lat": -8.6,
+  "lon": 240.3,
+  "note": "Collapse openings on Arsia's flank; meters-thick basalt roof",
+  "shielding": 92,
+  "thermal": 78,
+  "access": 55
+ },
+ {
+  "id": "sh-tractus-catena",
+  "name": "Tractus Catena pit chain",
+  "type": "lava-tube skylight",
+  "lat": 3.3,
+  "lon": 263.0,
+  "note": "Aligned pits along a Tharsis tube system",
+  "shielding": 88,
+  "thermal": 74,
+  "access": 62
+ },
+ {
+  "id": "sh-hephaestus",
+  "name": "Hephaestus Fossae tube segment",
+  "type": "lava-tube skylight",
+  "lat": 21.3,
+  "lon": 126.5,
+  "note": "Long fossa tube west of Elysium",
+  "shielding": 86,
+  "thermal": 72,
+  "access": 58
+ },
+ {
+  "id": "sh-hellas-alcove",
+  "name": "Hellas eastern rim alcove",
+  "type": "crater alcove",
+  "lat": -38.0,
+  "lon": 100.0,
+  "note": "Deep alcove in the high Hellas rim; thick atmosphere column",
+  "shielding": 70,
+  "thermal": 65,
+  "access": 68
+ },
+ {
+  "id": "sh-louth",
+  "name": "Louth crater ice patch shelter",
+  "type": "ice-filled crater",
+  "lat": 70.2,
+  "lon": 247.7,
+  "note": "Permanent water-ice cap for thermal stability and resource",
+  "shielding": 62,
+  "thermal": 88,
+  "access": 55
+ },
+ {
+  "id": "sh-korolev",
+  "name": "Korolev crater ice mound",
+  "type": "ice-filled crater",
+  "lat": 72.8,
+  "lon": 164.6,
+  "note": "Deep crater trapping a ~2 km ice mound",
+  "shielding": 64,
+  "thermal": 92,
+  "access": 48
+ },
+ {
+  "id": "sh-hebes-alcove",
+  "name": "Hebes Chasma interior alcove",
+  "type": "canyon alcove",
+  "lat": -1.0,
+  "lon": 283.3,
+  "note": "Isolated canyon with tall walls",
+  "shielding": 74,
+  "thermal": 60,
+  "access": 70
+ },
+ {
+  "id": "sh-candor-alcove",
+  "name": "Candor Chasma layered-deposit alcove",
+  "type": "canyon alcove",
+  "lat": -6.5,
+  "lon": 284.5,
+  "note": "Caves/alcoves in ILD sulfates",
+  "shielding": 72,
+  "thermal": 58,
+  "access": 72
+ },
+ {
+  "id": "sh-ganges-alcove",
+  "name": "Ganges Chasma alcove",
+  "type": "canyon alcove",
+  "lat": -8.2,
+  "lon": 315.3,
+  "note": "Northeast canyon branch alcoves",
+  "shielding": 70,
+  "thermal": 58,
+  "access": 74
+ },
+ {
+  "id": "sh-medusae-overhang",
+  "name": "Medusae Fossae yardang overhang",
+  "type": "overhang",
+  "lat": -3.5,
+  "lon": 158.0,
+  "note": "Easily carved soft tuff provides ready overhangs",
+  "shielding": 55,
+  "thermal": 52,
+  "access": 86
+ },
+ {
+  "id": "sh-juventae-overhang",
+  "name": "Juventae Chasma overhang",
+  "type": "overhang",
+  "lat": -4.6,
+  "lon": 297.5,
+  "note": "Sulfate mound margins with undercut faces",
+  "shielding": 58,
+  "thermal": 54,
+  "access": 78
+ },
+ {
+  "id": "sh-cerberus-tube",
+  "name": "Cerberus Fossae tube segment",
+  "type": "lava-tube skylight",
+  "lat": 6.5,
+  "lon": 158.0,
+  "note": "Young tube near seismically active Fossae (verify stability)",
+  "shielding": 84,
+  "thermal": 70,
+  "access": 64
+ }
+]

@@ -1,0 +1,192 @@
+[
+ {
+  "id": "mdim21",
+  "title": "Viking MDIM 2.1 global color mosaic",
+  "category": "imagery",
+  "res_m": 232,
+  "source": "USGS Astrogeology",
+  "attribution": "USGS/NASA Viking Orbiter MDIM 2.1",
+  "url": "https://astrogeology.usgs.gov",
+  "legend": "Planetary-scale color base map"
+ },
+ {
+  "id": "ctx-murray",
+  "title": "Caltech Murray Lab Global CTX Mosaic (v01)",
+  "category": "imagery",
+  "res_m": 5,
+  "source": "Caltech Murray Lab (murray-lab.caltech.edu)",
+  "attribution": "Caltech/MSSS/NASA JPL; image courtesy Bruce Murray Lab",
+  "url": "https://murray-lab.caltech.edu/CTX/",
+  "legend": "~5 m/px, 99.5% coverage between 88S and 88N; default surface layer"
+ },
+ {
+  "id": "hirise-insets",
+  "title": "HiRISE deep-zoom insets",
+  "category": "imagery",
+  "res_m": 0.3,
+  "source": "NASA/JPL/University of Arizona HiRISE",
+  "attribution": "NASA/JPL-Caltech/University of Arizona",
+  "url": "https://www.uahirise.org/",
+  "legend": "~25-30 cm/px insets at supported locations"
+ },
+ {
+  "id": "themis-day",
+  "title": "THEMIS daytime infrared",
+  "category": "imagery",
+  "res_m": 100,
+  "source": "ASU THEMIS / USGS",
+  "attribution": "NASA/JPL-Caltech/Arizona State University",
+  "url": "https://themis.asu.edu",
+  "legend": "Global thermal inertia at ~100 m/px"
+ },
+ {
+  "id": "themis-night",
+  "title": "THEMIS nighttime infrared",
+  "category": "imagery",
+  "res_m": 100,
+  "source": "ASU THEMIS / USGS",
+  "attribution": "NASA/JPL-Caltech/Arizona State University",
+  "url": "https://themis.asu.edu",
+  "legend": "Night-time thermal; exposes bedrock and dust cover"
+ },
+ {
+  "id": "mola-color",
+  "title": "MOLA color elevation",
+  "category": "topography",
+  "res_m": 463,
+  "source": "NASA MOLA MEGDR (4 ppd)",
+  "attribution": "NASA/JPL-Caltech/GSFC MOLA team",
+  "url": "https://pds-geosciences.wustl.edu",
+  "legend": "Global topography from MOLA laser altimetry"
+ },
+ {
+  "id": "mola-shaded",
+  "title": "MOLA shaded relief",
+  "category": "topography",
+  "res_m": 463,
+  "source": "USGS / OpenPlanetaryMap derived",
+  "attribution": "NASA MOLA; rendering via OpenPlanetaryMap",
+  "url": "https://openplanetary.org",
+  "legend": "Hillshaded global topography"
+ },
+ {
+  "id": "sim3292-geology",
+  "title": "Geologic Map of Mars (SIM 3292)",
+  "category": "geology",
+  "res_m": null,
+  "source": "USGS Geologic Investigations Series I-1803? no - SIM 3292 (K. Tanaka et al. 2014)",
+  "attribution": "USGS/NASA, Tanaka, Skinner, Dohm et al. (2014)",
+  "url": "https://pubs.usgs.gov/sim/3292/",
+  "legend": "Interactive stratigraphic units, Noachian-Amazonian"
+ },
+ {
+  "id": "swim-probability",
+  "title": "SWIM subsurface water-ice probability",
+  "category": "ice",
+  "res_m": null,
+  "source": "SWIM project (Planetary Science Institute / JPL)",
+  "attribution": "NASA/JPL/PSI SWIM team",
+  "url": "https://swim.psi.edu",
+  "legend": "Consensus ice-likelihood classes A/B/C"
+ },
+ {
+  "id": "depth-to-ice",
+  "title": "Depth to ice (SWIM-derived)",
+  "category": "ice",
+  "res_m": null,
+  "source": "SWIM project (swim.psi.edu)",
+  "attribution": "NASA/JPL/PSI SWIM team",
+  "url": "https://swim.psi.edu",
+  "legend": "Depth-to-ice categories: <1 m, 1-5 m, >5 m"
+ },
+ {
+  "id": "valley-networks",
+  "title": "Valley network catalog",
+  "category": "hydrology",
+  "res_m": null,
+  "source": "Published valley-network compilations (Noachian fluvial systems)",
+  "attribution": "Compiled from peer-reviewed catalogs; anchor set verified at connector time",
+  "legend": "Noachian drainage systems"
+ },
+ {
+  "id": "paleolakes",
+  "title": "Paleolake and open-basin catalog",
+  "category": "hydrology",
+  "res_m": null,
+  "source": "Published paleolake catalogs (closed-basin candidates)",
+  "attribution": "Compiled from peer-reviewed catalogs; anchor set verified at connector time",
+  "legend": "Ancient lake candidates with inlet/outlet evidence"
+ },
+ {
+  "id": "crater-catalog",
+  "title": "Published crater catalog",
+  "category": "craters",
+  "res_m": null,
+  "source": "Published crater size-frequency catalogs",
+  "attribution": "Compiled catalogs; verify at connector time",
+  "legend": "Crater distributions for dating and analysis"
+ },
+ {
+  "id": "mineralogy",
+  "title": "Mineralogical summaries (CRISM/OMEGA-derived)",
+  "category": "mineralogy",
+  "res_m": null,
+  "source": "Published CRISM/OMEGA spectral summaries",
+  "attribution": "NASA/JPL CRISM; ESA OMEGA",
+  "legend": "Phyllosilicate, sulfate, carbonate provinces"
+ },
+ {
+  "id": "volcanic-regions",
+  "title": "Volcanic region registry",
+  "category": "volcanology",
+  "res_m": null,
+  "source": "USGS gazetteer + published volcanic compilations",
+  "attribution": "USGS; compiled",
+  "legend": "Shields, tholi, paterae, fissures"
+ },
+ {
+  "id": "rover-traverses",
+  "title": "Rover traverses (historical)",
+  "category": "experience",
+  "res_m": null,
+  "source": "NASA/JPL published traverse maps",
+  "attribution": "NASA/JPL-Caltech",
+  "legend": "Spirit, Opportunity, Curiosity, Perseverance, Zhurong routes"
+ },
+ {
+  "id": "panorama-poses",
+  "title": "Street View camera poses",
+  "category": "experience",
+  "res_m": null,
+  "source": "NAM panorama catalog (NASA/JPL-published mosaics)",
+  "attribution": "NASA/JPL-Caltech/MSSS/ASU/Cornell",
+  "legend": "Clickable camera positions with capture date and credit"
+ },
+ {
+  "id": "shelters",
+  "title": "Shelter candidates",
+  "category": "resources",
+  "res_m": null,
+  "source": "NAM curated candidates [SIM] scoring",
+  "attribution": "NAM; coordinates approximate - verify against HiRISE before any use",
+  "legend": "Lava tubes, crater/ice shelters, canyon alcoves, overhangs"
+ },
+ {
+  "id": "water-candidates",
+  "title": "Water-ice candidates",
+  "category": "resources",
+  "res_m": null,
+  "source": "SWIM-consistent regions (swim.psi.edu)",
+  "attribution": "SWIM project; NAM interpretation",
+  "legend": "Certainty classes, depth-to-ice, stability logic"
+ },
+ {
+  "id": "presence-agents",
+  "title": "Presence layer (crew, rovers, habitats)",
+  "category": "simulation",
+  "res_m": null,
+  "source": "NAM presence simulation [SIM]",
+  "attribution": "NAM simulated presence feed",
+  "legend": "Live [SIM] positions of crews, rovers, habitats"
+ }
+]
