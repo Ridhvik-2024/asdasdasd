@@ -1,39 +1,37 @@
-# NAM v2 Backend — Navigation Assistant of Mars
+# NAM v2 — Navigation Assistant of Mars (Google Earth for Mars)
 
-**Google Earth for Mars, backend-only build.** One FastAPI monorepo delivering the
-entire v2 target specification in five sequential, cumulative build phases, each
-closing at a verified release gate:
+**Full-stack Google Earth for Mars platform** delivering all phases of the
+NAM v2 Complete Build Plan: a **React + TypeScript + Vite + Three.js** interactive
+planetary client paired with a **FastAPI** backend (105 OpenAPI 3.1 endpoints,
+24 JEV AI tools, SSE streaming, and real-time `/ws/events` + `/ws/presence` WebSockets).
 
 | Build phase | Release gate | Scope | Gate test |
 |---|---|---|---|
-| 1 | `v2.0.0-backend` — The Google Earth Core | terrain engine, imagery ladder + tile proxy, full-gazetteer search + location cards, 12-tool measurement suite (incl. 3D-print STL), integrity layer | `tests/test_phase1_gate.py` |
-| 2 | `v2.1.0-backend` — Street View + Scientific Explorer | science layer registry, cited discovery browser, landing-site compare, rover panoramas/traverses/orbital-ground linkage, Walk View (mesh patches + POV library) | `tests/test_phase2_gate.py` |
-| 3 | `v2.2.0-backend-ai` — JEV intelligent explorer | 24 typed tools, deterministic intent router, OpenAI-compatible LLM adapter (llama.cpp), retrieval, SSE chat with tool trace, explain-view, benchmark | `tests/test_phase3_gate.py` |
-| 4 | `v2.2.1-backend-missions` — Missions + environment | A* routing (3 presets), mission suite (route/area/evacuation/survey, KML, optimize, compare), radiation + SEP/dust storms (MY34), storm-response planner, water/shelter discovery | `tests/test_phase4_gate.py` |
-| 5 | `v2.2.2-backend-live` — Real-time + closing | nodes (8 types), presence simulation, WebSocket channels (`/ws/events`, `/ws/presence`) with bounded rates, storm drill, integrity audit | `tests/test_phase5_gate.py` |
-| 6 | `v2.3.0-backend` — Hardened scientific & technical release | Mars24 solar geometry, spherical geodesy, polar/seam-safe terrain & aspect/curvature, admissible A* + 2-opt missions, XML-safe KML + GeoJSON/CSV, strict JEV/LLM schema validation, persistent tile cache, WS replay, optional API-key auth | `tests/test_technical_review_fixes.py` |
+| 1 | `v2.0` — The Google Earth Core | 3D IAU Mars ellipsoid globe + 5 projections (3D, 2D Flat, N/S Polar, Columbus 2.5D), 1–10× terrain exaggeration, Mars24 sun & sol animator, landmark flyovers, split-screen layer compare, 2,055-feature USGS gazetteer search & location cards, 12-tool Mars Trek measurement suite (incl. binary STL) | `tests/test_phase1_gate.py` |
+| 2 | `v2.1` — Street View + Walk View + Scientific Explorer | 20-layer science registry, cited discovery browser, 3-way landing-site compare, 360° rover panorama viewer + traverse walking + orbital inset + historical compare + Perseverance raw-image connector, Three.js First-Person Walk View (WASD + POV library + heading-matched photos), full scientific catalogs (orbiters, instruments, spectral targets, datasets, unavailable sources) | `tests/test_phase2_gate.py` |
+| 3 | `v2.2` — JEV AI + Missions + Environment + Real-Time | 24 typed JEV tools, SSE chat drawer with inline tool trace & globe-control intents, explain-what-I-am-looking-at, A* 4-type mission planner + 2-opt optimize + route profile/radiation + KML/GeoJSON/CSV/share, RAD-anchored point & path radiation, MY34/SEP storm sim & evacuation drill, SWIM water ice, 12 scored shelters, 8-type spatial nodes, live presence & WebSockets | `tests/test_phase3_gate.py`–`test_phase5_gate.py` |
+| 4 | `v2.3+` — Hardening, Deep Audit & Complete Build Plan | Mars24 solar geometry, antimeridian/polar-safe geodesy & filtering, atomic bookmarks, path radiation integration, landmark flyovers, scientific catalogs, planetary SIM rasters, and full interactive web client (`client/`) | `tests/test_technical_review_fixes.py`, `tests/test_deep_audit_fixes.py`, `tests/test_build_plan_upgrades.py` |
 
-Current status: **102/102 tests passing** — 48 phase-gate tests + 38 merged submission tests + 16 technical-review & v2.3 roadmap regression tests (`python -m pytest tests/ -q`), plus **26/26 self-test checks** (`python scripts/selftest.py`).
+Current status: **118/118 pytest tests passing**, **26/26 self-test checks passing** (`scripts/selftest.py`), **36/36 14-category Build Plan inventory checks EXISTS** (`scripts/audit_inventory.py`), and TypeScript + Vite client production build green.
 
 ---
 
 ## Quickstart
 
 ```bash
-./run.sh                       # venv + deps + seeds + uvicorn on :8000
-# or manually:
-pip install -r requirements.txt
-python scripts/make_seeds.py && python scripts/make_demo_grid.py
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+./run.sh                       # venv + deps + seeds + client build + uvicorn on :8000
+# Dev mode (live reload):
+.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+cd client && npm install && npm run dev   # Vite on :5173 proxying API & WS to :8000
 ```
 
-Then: `http://localhost:8000/docs` (Swagger UI), `/openapi.json` (OpenAPI 3.1),
-`/health`.
+Then open `http://localhost:8000/` (production build) or `http://localhost:5173/` (Vite dev), plus `/docs` (Swagger UI), `/openapi.json` (OpenAPI 3.1), and `/health`.
 
 ```bash
-python scripts/selftest.py     # 25-check verified self-test sweep, exit code honest
-python -m pytest tests/ -q     # the five phase gates
-docker compose up --build      # containerized run (optional PostGIS service included)
+.venv/bin/python scripts/selftest.py         # 26-check end-to-end backend self-test
+.venv/bin/python scripts/audit_inventory.py  # 14-category Build Plan inventory verification
+.venv/bin/python -m pytest tests/ -q         # full 118-test regression & phase-gate suite
+docker compose up --build                    # multi-stage container build (client + backend)
 ```
 
 ## Architecture

@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from .. import db, seeds, terrain
 from ..integrity import prov
-from ..mars import hav_km
+from ..mars import hav_km, validate_coords, validate_lat, validate_lon
 
 router = APIRouter(tags=["gazetteer"])
 
@@ -42,6 +42,37 @@ def _imagery_depth(lat, lon):
                     "ladder": ["HiRISE 0.3 m/px", "CTX Murray 5 m/px", "MDIM 2.1 232 m/px"]}
     return {"deepest_layer": "CTX Murray mosaic (5 m/px)",
             "ladder": ["CTX Murray 5 m/px", "MDIM 2.1 232 m/px"]}
+
+
+@router.get("/location/card")
+def location_card_coords(lat: float, lon: float):
+    try:
+        vlat, vlon = validate_coords(lat, lon)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    T = terrain.engine().ensure()
+    elev = round(T.elev(vlat, vlon), 1)
+    slope = round(T.slope(vlat, vlon), 2)
+    aspect = round(T.aspect(vlat, vlon), 1)
+    nearby = seeds.nearest(vlat, vlon, radius_km=350, limit=8)
+    obs = seeds.observations(lat=vlat, lon=vlon, radius_km=500, limit=8)
+    pans = seeds.panoramas_near(vlat, vlon, radius_km=150)
+    region = seeds.region_context(vlat, vlon)
+    depth = _imagery_depth(vlat, vlon)
+    return {
+        "lat": vlat, "lon": vlon,
+        "terrain": {"elevation_m": elev, "slope_deg": slope, "aspect_deg": aspect},
+        "region_context": region,
+        "imagery_depth": {
+            "best_available": depth["deepest_layer"],
+            "hirise_inset": "inset" in depth,
+            "ladder": depth["ladder"],
+        },
+        "nearby_features": nearby,
+        "observations": obs,
+        "nearest_panoramas": pans[:6],
+        "provenance": {"elevation": T.prov(), "gazetteer": prov("USGS Gazetteer of Planetary Nomenclature")},
+    }
 
 
 @router.get("/locations/{fid}")
@@ -89,9 +120,14 @@ class BookmarkIn(BaseModel):
 
 @router.post("/bookmarks")
 def add_bookmark(b: BookmarkIn):
-    db.ex("INSERT INTO bookmarks (name,lat,lon,camera_json) VALUES (?,?,?,?)",
-          (b.name, b.lat, b.lon, db.j(b.camera)))
-    rows = db.q("SELECT * FROM bookmarks ORDER BY id DESC LIMIT 1")
+    try:
+        vlat, vlon = validate_coords(b.lat, b.lon)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    with db.tx():
+        bid = db.ex("INSERT INTO bookmarks (name,lat,lon,camera_json) VALUES (?,?,?,?)",
+                    (b.name, vlat, vlon, db.j(b.camera)))
+        rows = db.q("SELECT * FROM bookmarks WHERE id=?", (bid,))
     return rows[0] | {"camera": b.camera}
 
 
@@ -104,7 +140,8 @@ def list_bookmarks():
 
 @router.delete("/bookmarks/{bid}")
 def del_bookmark(bid: int):
-    db.ex("DELETE FROM bookmarks WHERE id=?", (bid,))
+    if db.ex_count("DELETE FROM bookmarks WHERE id=?", (bid,)) == 0:
+        raise HTTPException(404, "unknown bookmark")
     return {"deleted": bid}
 
 
@@ -115,6 +152,13 @@ class ShareIn(BaseModel):
 
 @router.post("/share")
 def share(s: ShareIn):
+    try:
+        if "lat" in s.camera and s.camera["lat"] is not None:
+            validate_lat(s.camera["lat"])
+        if "lon" in s.camera and s.camera["lon"] is not None:
+            validate_lon(s.camera["lon"])
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     sid = uuid.uuid4().hex[:10]
     payload = {"name": s.name, "camera": s.camera}
     db.ex("INSERT INTO share_links (id,payload_json) VALUES (?,?)", (sid, db.j(payload)))

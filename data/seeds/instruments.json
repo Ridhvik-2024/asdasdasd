@@ -1,0 +1,132 @@
+[
+ {
+  "id": "mola",
+  "name": "MOLA (Mars Orbiter Laser Altimeter)",
+  "mission": "Mars Global Surveyor",
+  "kind": "laser altimeter",
+  "res_m": 463,
+  "measures": "Global topographic elevation and planetary radii (MEGDR 4-128 ppd)",
+  "src": "NASA PDS Geosciences Node",
+  "url": "https://pds-geosciences.wustl.edu"
+ },
+ {
+  "id": "ctx",
+  "name": "CTX (Context Camera)",
+  "mission": "MRO",
+  "kind": "panchromatic imager",
+  "res_m": 5.5,
+  "measures": "30 km-wide swath global surface imagery (~5-6 m/px)",
+  "src": "MSSS / Caltech Murray Lab",
+  "url": "https://murray-lab.caltech.edu/CTX/"
+ },
+ {
+  "id": "hirise",
+  "name": "HiRISE (High Resolution Imaging Science Experiment)",
+  "mission": "MRO",
+  "kind": "telescopic imager",
+  "res_m": 0.3,
+  "measures": "Sub-meter visible/NIR imagery and 1 m stereo DTMs",
+  "src": "University of Arizona / NASA JPL",
+  "url": "https://www.uahirise.org/"
+ },
+ {
+  "id": "crism",
+  "name": "CRISM (Compact Reconnaissance Imaging Spectrometer for Mars)",
+  "mission": "MRO",
+  "kind": "hyperspectral spectrometer",
+  "res_m": 18,
+  "measures": "Visible-NIR (0.36-3.92 um) mineralogical mapping (clays, carbonates, sulfates)",
+  "src": "JHU APL / NASA PDS",
+  "url": "https://crism.jhuapl.edu/"
+ },
+ {
+  "id": "themis",
+  "name": "THEMIS (Thermal Emission Imaging System)",
+  "mission": "2001 Mars Odyssey",
+  "kind": "thermal IR / visible imager",
+  "res_m": 100,
+  "measures": "Day/night thermal infrared mosaics for thermal inertia and surface composition",
+  "src": "ASU Mars Space Flight Facility",
+  "url": "https://themis.asu.edu/"
+ },
+ {
+  "id": "sharad",
+  "name": "SHARAD (Shallow Radar)",
+  "mission": "MRO",
+  "kind": "orbital radar sounder",
+  "res_m": 15,
+  "measures": "Subsurface radar sounding (20 MHz) detecting buried ice sheets up to ~1 km depth",
+  "src": "ASI / NASA PDS",
+  "url": "https://pds-geosciences.wustl.edu"
+ },
+ {
+  "id": "marsis",
+  "name": "MARSIS (Mars Advanced Radar for Subsurface and Ionosphere Sounding)",
+  "mission": "Mars Express",
+  "kind": "orbital radar sounder",
+  "res_m": 150,
+  "measures": "Low-frequency (1.8-5 MHz) deep subsurface sounding of polar layered deposits",
+  "src": "ESA / ASI",
+  "url": "https://www.esa.int"
+ },
+ {
+  "id": "omega",
+  "name": "OMEGA (Observatoire pour la Mineralogie, l'Eau, les Glaces et l'Activite)",
+  "mission": "Mars Express",
+  "kind": "imaging spectrometer",
+  "res_m": 300,
+  "measures": "Global visible-NIR mapping of hydrated minerals, sulfates, and surface ice",
+  "src": "IAS / CNES / ESA",
+  "url": "https://www.cosmos.esa.int/web/psa/mars-express"
+ },
+ {
+  "id": "hrsc",
+  "name": "HRSC (High Resolution Stereo Camera)",
+  "mission": "Mars Express",
+  "kind": "stereo color imager",
+  "res_m": 12.5,
+  "measures": "Regional stereo DTMs and true-color orbital mosaics",
+  "src": "DLR / FU Berlin / ESA",
+  "url": "https://www.dlr.de/"
+ },
+ {
+  "id": "marci",
+  "name": "MARCI (Mars Color Imager)",
+  "mission": "MRO",
+  "kind": "wide-angle weather camera",
+  "res_m": 1000,
+  "measures": "Daily global weather, dust storm fronts, and ozone monitoring",
+  "src": "MSSS / NASA JPL",
+  "url": "https://www.msss.com/"
+ },
+ {
+  "id": "rad",
+  "name": "RAD (Radiation Assessment Detector)",
+  "mission": "MSL Curiosity",
+  "kind": "energetic particle detector",
+  "res_m": null,
+  "measures": "Surface GCR (~0.67 mSv/sol baseline) and SEP dose rates in Gale crater",
+  "src": "SwRI / DLR / NASA JPL (Hassler et al. 2014)",
+  "url": "https://pds-ppi.igpp.ucla.edu/"
+ },
+ {
+  "id": "mastcam-z",
+  "name": "Mastcam-Z",
+  "mission": "Mars 2020 Perseverance",
+  "kind": "zoomable stereo multispectral camera",
+  "res_m": null,
+  "measures": "High-resolution stereo color panoramas and multispectral outcrop imaging",
+  "src": "ASU / MSSS / NASA JPL",
+  "url": "https://mastcamz.asu.edu/"
+ },
+ {
+  "id": "seis",
+  "name": "SEIS (Seismic Experiment for Interior Structure)",
+  "mission": "InSight",
+  "kind": "broadband seismometer",
+  "res_m": null,
+  "measures": "Marsquake detection, crustal thickness, and mantle/core structure",
+  "src": "CNES / IPGP / NASA JPL",
+  "url": "https://pds-geosciences.wustl.edu"
+ }
+]

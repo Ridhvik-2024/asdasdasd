@@ -7,6 +7,7 @@ import hmac
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from . import config, events, presence
 from .routers import (environment, gazetteer, health, imagery, jev, measurements,
@@ -17,6 +18,8 @@ _MUTATING_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 # Read-only / stateless computation POST endpoints that do not mutate shared state:
 _STATELESS_POST_PREFIXES = (
     "/measure/",
+    "/elevation/profile",
+    "/environment/radiation/path",
     "/layers/compare",
     "/walkview/init",
     "/jev/explain",
@@ -109,3 +112,13 @@ app.include_router(environment.router)
 app.include_router(resources.router)
 app.include_router(nodes.router)
 app.include_router(ws.router)
+
+_CLIENT_ASSETS = config.ROOT / "client" / "dist" / "assets"
+if _CLIENT_ASSETS.exists():
+    app.mount("/assets", StaticFiles(directory=str(_CLIENT_ASSETS)), name="client-assets")
+
+_NASA_PUBLIC = config.ROOT / "client" / "dist" / "nasa"
+if not _NASA_PUBLIC.exists():
+    _NASA_PUBLIC = config.ROOT / "client" / "public" / "nasa"
+if _NASA_PUBLIC.exists():
+    app.mount("/nasa", StaticFiles(directory=str(_NASA_PUBLIC)), name="nasa-assets")

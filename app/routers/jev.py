@@ -115,6 +115,22 @@ def benchmark():
     return llm.benchmark()
 
 
+@router.get("/examples")
+def review_examples():
+    return {
+        "commands": [
+            "Fly to Jezero crater and tell me what Perseverance found there.",
+            "Show me the best water-ice candidates in Arcadia Planitia.",
+            "Compare Jezero crater, Gale crater, and Meridiani Planum as landing sites.",
+            "Plan an evacuation route from Jezero during an X-class solar particle event.",
+            "What are the tallest volcanoes on Mars?",
+            "Find the highest-scoring radiation shelters near Tharsis.",
+            "Measure the distance from Viking 1 to Perseverance.",
+            "Explain what is known about recurring slope lineae on Mars.",
+        ]
+    }
+
+
 @router.get("/logs")
 def logs(limit: int = 20):
     rows = db.q("SELECT ts,role,content FROM chat_logs ORDER BY id DESC LIMIT ?", (min(limit, 100),))

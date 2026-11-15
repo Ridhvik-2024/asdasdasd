@@ -386,7 +386,7 @@ datasets = [
     {"id": "ds-swim", "name": "Subsurface Water Ice Mapping (SWIM)", "org": "NASA/JPL/PSI", "res_m": None, "url": "https://swim.psi.edu", "note": "Consensus ice maps and depth-to-ice"},
     {"id": "ds-gazetteer", "name": "Gazetteer of Planetary Nomenclature (Mars)", "org": "USGS/IAU", "res_m": None, "url": "https://planetarynames.wr.usgs.gov/", "note": "Thousands of approved feature names"},
     {"id": "ds-perseverance-raw", "name": "Perseverance Raw Images", "org": "NASA/JPL-Caltech", "res_m": None, "url": "https://mars.nasa.gov/raw_images/", "note": "Daily raw image feed (JSON/RSS at connector time)"},
-    {"id": "ds-curiosity-raw", "name": "Curiosity Raw Images", "org": "NASA/JPL-Caltech/MSSS", "res_m": None, "url": "https://mars.nasa/msl/raw/", "note": "MSL raw image gallery"},
+    {"id": "ds-curiosity-raw", "name": "Curiosity Raw Images", "org": "NASA/JPL-Caltech/MSSS", "res_m": None, "url": "https://mars.nasa.gov/msl/multimedia/raw-images/", "note": "MSL raw image gallery"},
     {"id": "ds-crism", "name": "CRISM targeted reduced data", "org": "NASA PDS", "res_m": None, "url": "https://pds-geosciences.wustl.edu", "note": "Visible-NIR hyperspectral observations"},
     {"id": "ds-marsis-sharad", "name": "MARSIS / SHARAD sounding data", "org": "ESA / NASA PDS", "res_m": None, "url": "https://www.esa.int", "note": "Subsurface radar soundings"},
 ]
@@ -423,6 +423,182 @@ rover_regions = {
     "Spirit": {"bbox": [-15.4, 175.0, -14.4, 176.0], "site": "Gusev crater"},
 }
 
+# ------------------------------------------------------------- orbiters (8)
+orbiters = [
+    {"id": "mgs", "name": "Mars Global Surveyor", "agency": "NASA/JPL", "arrival_year": 1997, "status": "completed (2006)",
+     "instruments": ["MOLA", "MOC", "TES"], "orbit": "Sun-synchronous polar ~400 km",
+     "src": "NASA PDS Geosciences Node", "url": "https://pds-geosciences.wustl.edu/missions/mgs/"},
+    {"id": "odyssey", "name": "2001 Mars Odyssey", "agency": "NASA/JPL", "arrival_year": 2001, "status": "active",
+     "instruments": ["THEMIS", "GRS", "HEND"], "orbit": "Sun-synchronous polar ~400 km",
+     "src": "NASA/JPL / ASU THEMIS", "url": "https://mars.nasa.gov/odyssey/"},
+    {"id": "mex", "name": "Mars Express", "agency": "ESA", "arrival_year": 2003, "status": "active",
+     "instruments": ["HRSC", "OMEGA", "MARSIS", "PFS"], "orbit": "Elliptical polar ~300 x 10,000 km",
+     "src": "ESA Planetary Science Archive", "url": "https://www.cosmos.esa.int/web/psa/mars-express"},
+    {"id": "mro", "name": "Mars Reconnaissance Orbiter", "agency": "NASA/JPL", "arrival_year": 2006, "status": "active",
+     "instruments": ["HiRISE", "CTX", "CRISM", "SHARAD", "MARCI", "MCS"], "orbit": "Sun-synchronous ~255 x 320 km",
+     "src": "NASA/JPL MRO / PDS", "url": "https://mars.nasa.gov/mro/"},
+    {"id": "maven", "name": "MAVEN", "agency": "NASA/GSFC/LASP", "arrival_year": 2014, "status": "active",
+     "instruments": ["SEP", "SWIA", "MAG", "IUVS", "NGIMS"], "orbit": "Elliptical atmospheric-escape orbit",
+     "src": "NASA PDS Atmospheres / LASP", "url": "https://lasp.colorado.edu/maven/"},
+    {"id": "tgo", "name": "ExoMars Trace Gas Orbiter", "agency": "ESA/Roscosmos", "arrival_year": 2016, "status": "active",
+     "instruments": ["CaSSIS", "NOMAD", "ACS", "FREND"], "orbit": "Circular ~400 km, 74 deg inclination",
+     "src": "ESA ExoMars TGO", "url": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Exploration/ExoMars"},
+    {"id": "hope", "name": "Emirates Mars Mission (Hope)", "agency": "UAESA/MBRSC", "arrival_year": 2021, "status": "active",
+     "instruments": ["EXI", "EMIRS", "EMUS"], "orbit": "High elliptical 20,000 x 43,000 km",
+     "src": "EMM Science Data Center", "url": "https://sdc.emiratesmarsmission.ae/"},
+    {"id": "tianwen1-orbiter", "name": "Tianwen-1 Orbiter", "agency": "CNSA", "arrival_year": 2021, "status": "active",
+     "instruments": ["HiRIC", "MoRIC", "MOSIR", "MINPA"], "orbit": "Elliptical remote-sensing polar orbit",
+     "src": "CNSA Lunar & Planetary Data Release System", "url": "https://clpds.bao.ac.cn/"},
+]
+
+# ------------------------------------------------------------- instruments (13)
+instruments = [
+    {"id": "mola", "name": "MOLA (Mars Orbiter Laser Altimeter)", "mission": "Mars Global Surveyor", "kind": "laser altimeter",
+     "res_m": 463, "measures": "Global topographic elevation and planetary radii (MEGDR 4-128 ppd)", "src": "NASA PDS Geosciences Node", "url": "https://pds-geosciences.wustl.edu"},
+    {"id": "ctx", "name": "CTX (Context Camera)", "mission": "MRO", "kind": "panchromatic imager",
+     "res_m": 5.5, "measures": "30 km-wide swath global surface imagery (~5-6 m/px)", "src": "MSSS / Caltech Murray Lab", "url": "https://murray-lab.caltech.edu/CTX/"},
+    {"id": "hirise", "name": "HiRISE (High Resolution Imaging Science Experiment)", "mission": "MRO", "kind": "telescopic imager",
+     "res_m": 0.3, "measures": "Sub-meter visible/NIR imagery and 1 m stereo DTMs", "src": "University of Arizona / NASA JPL", "url": "https://www.uahirise.org/"},
+    {"id": "crism", "name": "CRISM (Compact Reconnaissance Imaging Spectrometer for Mars)", "mission": "MRO", "kind": "hyperspectral spectrometer",
+     "res_m": 18, "measures": "Visible-NIR (0.36-3.92 um) mineralogical mapping (clays, carbonates, sulfates)", "src": "JHU APL / NASA PDS", "url": "https://crism.jhuapl.edu/"},
+    {"id": "themis", "name": "THEMIS (Thermal Emission Imaging System)", "mission": "2001 Mars Odyssey", "kind": "thermal IR / visible imager",
+     "res_m": 100, "measures": "Day/night thermal infrared mosaics for thermal inertia and surface composition", "src": "ASU Mars Space Flight Facility", "url": "https://themis.asu.edu/"},
+    {"id": "sharad", "name": "SHARAD (Shallow Radar)", "mission": "MRO", "kind": "orbital radar sounder",
+     "res_m": 15, "measures": "Subsurface radar sounding (20 MHz) detecting buried ice sheets up to ~1 km depth", "src": "ASI / NASA PDS", "url": "https://pds-geosciences.wustl.edu"},
+    {"id": "marsis", "name": "MARSIS (Mars Advanced Radar for Subsurface and Ionosphere Sounding)", "mission": "Mars Express", "kind": "orbital radar sounder",
+     "res_m": 150, "measures": "Low-frequency (1.8-5 MHz) deep subsurface sounding of polar layered deposits", "src": "ESA / ASI", "url": "https://www.esa.int"},
+    {"id": "omega", "name": "OMEGA (Observatoire pour la Mineralogie, l'Eau, les Glaces et l'Activite)", "mission": "Mars Express", "kind": "imaging spectrometer",
+     "res_m": 300, "measures": "Global visible-NIR mapping of hydrated minerals, sulfates, and surface ice", "src": "IAS / CNES / ESA", "url": "https://www.cosmos.esa.int/web/psa/mars-express"},
+    {"id": "hrsc", "name": "HRSC (High Resolution Stereo Camera)", "mission": "Mars Express", "kind": "stereo color imager",
+     "res_m": 12.5, "measures": "Regional stereo DTMs and true-color orbital mosaics", "src": "DLR / FU Berlin / ESA", "url": "https://www.dlr.de/"},
+    {"id": "marci", "name": "MARCI (Mars Color Imager)", "mission": "MRO", "kind": "wide-angle weather camera",
+     "res_m": 1000, "measures": "Daily global weather, dust storm fronts, and ozone monitoring", "src": "MSSS / NASA JPL", "url": "https://www.msss.com/"},
+    {"id": "rad", "name": "RAD (Radiation Assessment Detector)", "mission": "MSL Curiosity", "kind": "energetic particle detector",
+     "res_m": None, "measures": "Surface GCR (~0.67 mSv/sol baseline) and SEP dose rates in Gale crater", "src": "SwRI / DLR / NASA JPL (Hassler et al. 2014)", "url": "https://pds-ppi.igpp.ucla.edu/"},
+    {"id": "mastcam-z", "name": "Mastcam-Z", "mission": "Mars 2020 Perseverance", "kind": "zoomable stereo multispectral camera",
+     "res_m": None, "measures": "High-resolution stereo color panoramas and multispectral outcrop imaging", "src": "ASU / MSSS / NASA JPL", "url": "https://mastcamz.asu.edu/"},
+    {"id": "seis", "name": "SEIS (Seismic Experiment for Interior Structure)", "mission": "InSight", "kind": "broadband seismometer",
+     "res_m": None, "measures": "Marsquake detection, crustal thickness, and mantle/core structure", "src": "CNES / IPGP / NASA JPL", "url": "https://pds-geosciences.wustl.edu"},
+]
+
+# ------------------------------------------------------------- spectral targets (16)
+spectral_targets = [
+    {"id": "st-jezero-carbonate", "name": "Jezero marginal carbonates", "lat": 18.42, "lon": 77.45, "mineral_class": "carbonate / olivine", "instrument": "CRISM / Mastcam-Z",
+     "note": "Carbonate-bearing unit lining western Jezero crater rim, prioritized for Perseverance sampling.", "citation": "Horgan et al. (2020), Icarus 339"},
+    {"id": "st-jezero-clay", "name": "Jezero western delta phyllosilicates", "lat": 18.46, "lon": 77.44, "mineral_class": "Fe/Mg-smectite", "instrument": "CRISM",
+     "note": "Smectite-rich deltaic strata transported from Nili Fossae watershed.", "citation": "Ehlmann et al. (2008), Nature Geoscience"},
+    {"id": "st-nili-carbonate", "name": "Nili Fossae olivine-carbonate plains", "lat": 21.8, "lon": 74.5, "mineral_class": "Mg-carbonate / olivine", "instrument": "CRISM / OMEGA",
+     "note": "Largest exposed regional carbonate-olivine province on Mars.", "citation": "Ehlmann et al. (2008), Science 322"},
+    {"id": "st-mawrth-clay", "name": "Mawrth Vallis layered phyllosilicates", "lat": 24.0, "lon": 341.0, "mineral_class": "Al-phyllosilicate / Fe-smectite", "instrument": "OMEGA / CRISM",
+     "note": "Hundreds-of-meters-thick clay stratigraphy recording ancient pedogenesis/alteration.", "citation": "Bishop et al. (2008), Science 321"},
+    {"id": "st-gale-sulfate", "name": "Aeolis Mons (Mt Sharp) sulfate unit", "lat": -5.08, "lon": 137.85, "mineral_class": "hydrated sulfates", "instrument": "CRISM / ChemCam",
+     "note": "Transition from clay-bearing strata to sulfate-bearing strata recording drying climate.", "citation": "Milliken et al. (2010), GRL 37"},
+    {"id": "st-candor-kieserite", "name": "Candor Chasma interior sulfates", "lat": -6.5, "lon": 284.0, "mineral_class": "polyhydrated & monohydrated sulfate", "instrument": "OMEGA / CRISM",
+     "note": "Kieserite-bearing interior layered deposits inside central Valles Marineris.", "citation": "Gendrin et al. (2005), Science 307"},
+    {"id": "st-meridiani-hematite", "name": "Meridiani Planum crystalline hematite", "lat": -1.95, "lon": 354.47, "mineral_class": "gray hematite / jarosite", "instrument": "TES / Mini-TES / Mossbauer",
+     "note": "Gray hematite spherules over sulfate-rich sandstones mapped from orbit and ground.", "citation": "Christensen et al. (2000), JGR; Squyres et al. (2004), Science"},
+    {"id": "st-syrtis-basalt", "name": "Syrtis Major low-calcium/high-calcium pyroxene", "lat": 8.4, "lon": 69.5, "mineral_class": "basalt / pyroxene", "instrument": "TES / OMEGA",
+     "note": "Type locality for dark Martian basaltic shield volcanism.", "citation": "Mustard et al. (2005), Science 307"},
+    {"id": "st-terra-sirenum-chloride", "name": "Terra Sirenum chloride basin", "lat": -31.5, "lon": 206.5, "mineral_class": "chloride salt", "instrument": "THEMIS / CRISM",
+     "note": "Evaporite chloride deposits in southern highland basins.", "citation": "Osterloo et al. (2010), JGR Planets"},
+    {"id": "st-columbus-alunite", "name": "Columbus crater alunite & kaolinite", "lat": -29.8, "lon": 193.9, "mineral_class": "alunite / Fe-Mg clays / sulfates", "instrument": "CRISM",
+     "note": "Concentric paleolake shoreline mineralogy indicating acidic groundwater evaporation.", "citation": "Wray et al. (2011), JGR Planets"},
+    {"id": "st-gusev-silica", "name": "Home Plate opaline silica (Gusev)", "lat": -14.64, "lon": 175.53, "mineral_class": "opaline silica", "instrument": "Mini-TES / APXS",
+     "note": "High-purity (~90% SiO2) silica nodules interpreted as hydrothermal spring/fumarole deposits.", "citation": "Squyres et al. (2008), Science 320"},
+    {"id": "st-noctis-silica", "name": "Noctis Labyrinthus hydrated silica & iron sulfates", "lat": -7.2, "lon": 261.8, "mineral_class": "hydrated silica / ferric sulfate", "instrument": "CRISM",
+     "note": "Diverse hydrated minerals in western trough complexes.", "citation": "Weitz et al. (2011), Geology 39"},
+    {"id": "st-arcadia-ice", "name": "Arcadia Planitia shallow ice scarps", "lat": 45.2, "lon": 188.5, "mineral_class": "H2O ice (subsurface/exposed)", "instrument": "SHARAD / HiRISE / CRISM",
+     "note": "Mid-latitude buried ice sheets verified via SHARAD dielectric contrast and fresh impact exposures.", "citation": "Bramson et al. (2015), GRL 42; Dundas et al. (2018), Science"},
+    {"id": "st-korolev-ice", "name": "Korolev crater permanent water-ice mound", "lat": 72.8, "lon": 164.6, "mineral_class": "H2O ice (surface)", "instrument": "OMEGA / HRSC / SHARAD",
+     "note": "1.8 km-thick permanent water-ice cold-trap dome.", "citation": "Brothers & Holt (2016), GRL 43"},
+    {"id": "st-holden-phyllo", "name": "Holden crater lacustrine phyllosilicates", "lat": -26.4, "lon": 325.1, "mineral_class": "Fe/Mg-phyllosilicate", "instrument": "CRISM",
+     "note": "Light-toned bedded clay-bearing mudstones deposited after Uzboi Vallis breach.", "citation": "Grant et al. (2008), Geology 36"},
+    {"id": "st-eberswalde-delta", "name": "Eberswalde crater delta clays", "lat": -23.9, "lon": 326.7, "mineral_class": "Fe/Mg-smectite", "instrument": "CRISM / HiRISE",
+     "note": "Classic inverted meandering distributary delta containing smectite clays.", "citation": "Milliken & Bish (2010), Phil. Mag."},
+]
+
+# ------------------------------------------------------------- documented unavailable sources (7)
+unavailable_sources = [
+    {"id": "unavail-dsn-live", "name": "Live NASA Deep Space Network spacecraft telemetry",
+     "reason": "Operational mission telemetry and real-time spacecraft state vectors are not served by NAM backend connectors.",
+     "access_path": "https://eyes.nasa.gov/apps/dsn-now/dsn.html"},
+    {"id": "unavail-rover-rt-pose", "name": "Real-time millimeter rover pose / SPICE kernels",
+     "reason": "Authoritative SPICE NAIF kernels are released periodically and require offline kernel ingestion.",
+     "access_path": "https://naif.jpl.nasa.gov/naif/data_mars.html"},
+    {"id": "unavail-oltaris", "name": "NASA OLTARIS full radiation transport simulation",
+     "reason": "OLTARIS requires authenticated NASA LaRC job submission; NAM uses a RAD-anchored [SIM] scaling model.",
+     "access_path": "https://oltaris.nasa.gov/"},
+    {"id": "unavail-marci-daily-opacity", "name": "Real-time daily MARCI dust optical-depth (tau) feed",
+     "reason": "Daily global dust maps are published as weekly weather reports rather than a live low-latency API.",
+     "access_path": "https://www.msss.com/msss_images/subject/weather_reports.html"},
+    {"id": "unavail-proprietary-highres", "name": "Non-public or restricted stereo DTM products",
+     "reason": "Only publicly archived PDS/USGS/Murray Lab datasets are proxied.",
+     "access_path": "https://pds-imaging.jpl.nasa.gov/"},
+    {"id": "unavail-planetary-protection", "name": "Flight-certified Special Regions planetary-protection masks",
+     "reason": "COSPAR / NASA Planetary Protection compliance maps require mission-specific engineering review.",
+     "access_path": "https://sma.nasa.gov/sma-disciplines/planetary-protection"},
+    {"id": "unavail-flight-hazards", "name": "Flight-certified Entry, Descent & Landing (EDL) hazard maps",
+     "reason": "NAM slope/hazard tools are exploratory and derived from demo/MOLA DEMs; EDL requires HiRISE 1 m stereo DTMs.",
+     "access_path": "https://www.uahirise.org/dtm/"},
+]
+
+# ------------------------------------------------------------- automatic landmark flyovers (7)
+flyovers = [
+    {"id": "olympus-mons", "name": "Olympus Mons Summit & Basal Scarp", "region": "Tharsis",
+     "summary": "Orbit the 21.9 km shield volcano from the basal scarp to the nested summit calderas.",
+     "keyframes": [
+         {"lat": 16.0, "lon": 130.5, "altitude_km": 2200, "heading_deg": 35, "pitch_deg": -42, "dwell_s": 4.0, "caption": "Approaching the western flank of Olympus Mons"},
+         {"lat": 18.65, "lon": 133.8, "altitude_km": 950, "heading_deg": 80, "pitch_deg": -55, "dwell_s": 4.5, "caption": "Crossing the towering basal scarp toward the 600 km-wide shield"},
+         {"lat": 18.65, "lon": 133.8, "altitude_km": 420, "heading_deg": 185, "pitch_deg": -68, "dwell_s": 5.0, "caption": "Summit calderas at ~21.9 km above the MOLA datum"},
+     ], "src": "USGS Gazetteer / MOLA MEGDR"},
+    {"id": "valles-marineris", "name": "Valles Marineris Grand Canyon Run", "region": "Coprates / Candor / Melas",
+     "summary": "Sweep along the 4,000 km tectonic rift system from Noctis Labyrinthus through Melas and Candor Chasmata.",
+     "keyframes": [
+         {"lat": -6.8, "lon": 258.0, "altitude_km": 1600, "heading_deg": 102, "pitch_deg": -40, "dwell_s": 4.0, "caption": "Noctis Labyrinthus — fractured headwaters of the canyon system"},
+         {"lat": -7.5, "lon": 276.0, "altitude_km": 850, "heading_deg": 105, "pitch_deg": -48, "dwell_s": 4.5, "caption": "Ius & Tithonium Chasmata parallel fault troughs"},
+         {"lat": -10.3, "lon": 289.5, "altitude_km": 680, "heading_deg": 95, "pitch_deg": -52, "dwell_s": 4.5, "caption": "Melas & Candor Chasmata — >7 km deep with sulfate interior layered deposits"},
+         {"lat": -11.5, "lon": 313.0, "altitude_km": 1200, "heading_deg": 75, "pitch_deg": -45, "dwell_s": 4.0, "caption": "Eos & Capri Chasmata opening into the northern outflow channels"},
+     ], "src": "USGS Gazetteer / MOLA MEGDR"},
+    {"id": "hellas", "name": "Hellas Planitia Impact Basin", "region": "Southern Highlands",
+     "summary": "Descend across the 2,200 km rim into the deepest surface depression on Mars (~7 km below datum).",
+     "keyframes": [
+         {"lat": -34.0, "lon": 82.0, "altitude_km": 2600, "heading_deg": 210, "pitch_deg": -45, "dwell_s": 4.0, "caption": "Dao Vallis and the northeastern Hellas highland rim"},
+         {"lat": -42.4, "lon": 70.5, "altitude_km": 1100, "heading_deg": 240, "pitch_deg": -60, "dwell_s": 4.5, "caption": "Hellas basin floor — highest surface atmospheric pressure on Mars (~11-12 mbar)"},
+         {"lat": -45.0, "lon": 62.0, "altitude_km": 1700, "heading_deg": 300, "pitch_deg": -48, "dwell_s": 4.0, "caption": "Western floor and surrounding ancient Noachian crust"},
+     ], "src": "USGS Gazetteer / MOLA MEGDR"},
+    {"id": "gale", "name": "Gale Crater & Mount Sharp", "region": "Aeolis / Curiosity",
+     "summary": "Fly from Bradbury Landing up the 5 km sedimentary stratigraphy of Aeolis Mons (Mount Sharp).",
+     "keyframes": [
+         {"lat": -4.59, "lon": 137.44, "altitude_km": 750, "heading_deg": 155, "pitch_deg": -50, "dwell_s": 4.0, "caption": "Bradbury Landing & Yellowknife Bay ancient lakebed"},
+         {"lat": -5.08, "lon": 137.85, "altitude_km": 320, "heading_deg": 180, "pitch_deg": -58, "dwell_s": 4.5, "caption": "Aeolis Mons (Mt Sharp) — 5 km central layered sedimentary mound"},
+         {"lat": -4.6, "lon": 137.4, "altitude_km": 220, "heading_deg": 270, "pitch_deg": -52, "dwell_s": 4.5, "caption": "Gediz Vallis Ridge debris-flow corridor explored by Curiosity"},
+     ], "src": "NASA/JPL-Caltech MSL / USGS Gazetteer"},
+    {"id": "jezero", "name": "Jezero Crater & Western River Delta", "region": "Isidis NW / Perseverance",
+     "summary": "Inspect Neretva Vallis inlet, the clay-rich delta front, and Perseverance's sample-collection corridor.",
+     "keyframes": [
+         {"lat": 18.6, "lon": 77.1, "altitude_km": 680, "heading_deg": 110, "pitch_deg": -48, "dwell_s": 4.0, "caption": "Neretva Vallis river inlet breaching the western rim of Jezero"},
+         {"lat": 18.46, "lon": 77.44, "altitude_km": 220, "heading_deg": 135, "pitch_deg": -58, "dwell_s": 4.5, "caption": "Western river delta — phyllosilicate & carbonate target strata"},
+         {"lat": 18.4447, "lon": 77.4508, "altitude_km": 160, "heading_deg": 240, "pitch_deg": -62, "dwell_s": 4.5, "caption": "Octavia E. Butler Landing & Sol 911 Navcam 360 panorama site"},
+     ], "src": "NASA/JPL-Caltech Mars 2020 / USGS Gazetteer"},
+    {"id": "arsia-mons", "name": "Arsia Mons & Volcanic Skylight Flanks", "region": "Southern Tharsis",
+     "summary": "Tour the southernmost Tharsis shield volcano, its 110 km caldera, and lava-tube skylight candidate flanks.",
+     "keyframes": [
+         {"lat": -9.2, "lon": 238.5, "altitude_km": 1400, "heading_deg": 45, "pitch_deg": -45, "dwell_s": 4.0, "caption": "Approaching Arsia Mons across the southern Tharsis lava plains"},
+         {"lat": -8.35, "lon": 240.0, "altitude_km": 520, "heading_deg": 120, "pitch_deg": -58, "dwell_s": 4.5, "caption": "110 km summit caldera and glacial fan deposits on the western flank"},
+         {"lat": -8.4, "lon": 240.4, "altitude_km": 320, "heading_deg": 210, "pitch_deg": -55, "dwell_s": 4.5, "caption": "Upper-flank pit crater / lava-tube shelter candidate zone"},
+     ], "src": "USGS Gazetteer / HiRISE"},
+    {"id": "grand-tour", "name": "Grand Tour of Mars", "region": "Global",
+     "summary": "Planetary highlight tour linking Jezero, Gale, Olympus Mons, Valles Marineris, Hellas, and Arcadia ice plains.",
+     "keyframes": [
+         {"lat": 18.44, "lon": 77.45, "altitude_km": 1500, "heading_deg": 0, "pitch_deg": -55, "dwell_s": 4.0, "caption": "Jezero Crater — Perseverance rover & ancient river delta"},
+         {"lat": -4.6, "lon": 137.4, "altitude_km": 1500, "heading_deg": 0, "pitch_deg": -55, "dwell_s": 4.0, "caption": "Gale Crater — Curiosity rover & Mount Sharp"},
+         {"lat": 45.0, "lon": 190.0, "altitude_km": 2200, "heading_deg": 0, "pitch_deg": -50, "dwell_s": 4.0, "caption": "Arcadia Planitia — prime SWIM shallow subsurface water-ice plain"},
+         {"lat": 18.65, "lon": 133.8, "altitude_km": 1800, "heading_deg": 0, "pitch_deg": -52, "dwell_s": 4.0, "caption": "Olympus Mons — tallest planetary volcano in the Solar System"},
+         {"lat": -10.3, "lon": 289.5, "altitude_km": 2100, "heading_deg": 0, "pitch_deg": -50, "dwell_s": 4.0, "caption": "Valles Marineris — 4,000 km equatorial canyon system"},
+         {"lat": -42.4, "lon": 70.5, "altitude_km": 2400, "heading_deg": 0, "pitch_deg": -52, "dwell_s": 4.0, "caption": "Hellas Planitia — deepest Martian impact basin"},
+     ], "src": "USGS Gazetteer / NASA / SWIM"},
+]
+
 w("gazetteer_curated.json", features)
 w("landing_sites.json", landing_sites)
 w("science_layers.json", layers)
@@ -436,4 +612,9 @@ w("datasets.json", datasets)
 w("presence_agents.json", presence_agents)
 w("hirise_insets.json", hirise_insets)
 w("rover_regions.json", rover_regions)
+w("orbiters.json", orbiters)
+w("instruments.json", instruments)
+w("spectral_targets.json", spectral_targets)
+w("unavailable_sources.json", unavailable_sources)
+w("flyovers.json", flyovers)
 print("all seeds written to", SEEDS)

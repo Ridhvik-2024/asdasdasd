@@ -1,0 +1,130 @@
+[
+ {
+  "id": "mgs",
+  "name": "Mars Global Surveyor",
+  "agency": "NASA/JPL",
+  "arrival_year": 1997,
+  "status": "completed (2006)",
+  "instruments": [
+   "MOLA",
+   "MOC",
+   "TES"
+  ],
+  "orbit": "Sun-synchronous polar ~400 km",
+  "src": "NASA PDS Geosciences Node",
+  "url": "https://pds-geosciences.wustl.edu/missions/mgs/"
+ },
+ {
+  "id": "odyssey",
+  "name": "2001 Mars Odyssey",
+  "agency": "NASA/JPL",
+  "arrival_year": 2001,
+  "status": "active",
+  "instruments": [
+   "THEMIS",
+   "GRS",
+   "HEND"
+  ],
+  "orbit": "Sun-synchronous polar ~400 km",
+  "src": "NASA/JPL / ASU THEMIS",
+  "url": "https://mars.nasa.gov/odyssey/"
+ },
+ {
+  "id": "mex",
+  "name": "Mars Express",
+  "agency": "ESA",
+  "arrival_year": 2003,
+  "status": "active",
+  "instruments": [
+   "HRSC",
+   "OMEGA",
+   "MARSIS",
+   "PFS"
+  ],
+  "orbit": "Elliptical polar ~300 x 10,000 km",
+  "src": "ESA Planetary Science Archive",
+  "url": "https://www.cosmos.esa.int/web/psa/mars-express"
+ },
+ {
+  "id": "mro",
+  "name": "Mars Reconnaissance Orbiter",
+  "agency": "NASA/JPL",
+  "arrival_year": 2006,
+  "status": "active",
+  "instruments": [
+   "HiRISE",
+   "CTX",
+   "CRISM",
+   "SHARAD",
+   "MARCI",
+   "MCS"
+  ],
+  "orbit": "Sun-synchronous ~255 x 320 km",
+  "src": "NASA/JPL MRO / PDS",
+  "url": "https://mars.nasa.gov/mro/"
+ },
+ {
+  "id": "maven",
+  "name": "MAVEN",
+  "agency": "NASA/GSFC/LASP",
+  "arrival_year": 2014,
+  "status": "active",
+  "instruments": [
+   "SEP",
+   "SWIA",
+   "MAG",
+   "IUVS",
+   "NGIMS"
+  ],
+  "orbit": "Elliptical atmospheric-escape orbit",
+  "src": "NASA PDS Atmospheres / LASP",
+  "url": "https://lasp.colorado.edu/maven/"
+ },
+ {
+  "id": "tgo",
+  "name": "ExoMars Trace Gas Orbiter",
+  "agency": "ESA/Roscosmos",
+  "arrival_year": 2016,
+  "status": "active",
+  "instruments": [
+   "CaSSIS",
+   "NOMAD",
+   "ACS",
+   "FREND"
+  ],
+  "orbit": "Circular ~400 km, 74 deg inclination",
+  "src": "ESA ExoMars TGO",
+  "url": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Exploration/ExoMars"
+ },
+ {
+  "id": "hope",
+  "name": "Emirates Mars Mission (Hope)",
+  "agency": "UAESA/MBRSC",
+  "arrival_year": 2021,
+  "status": "active",
+  "instruments": [
+   "EXI",
+   "EMIRS",
+   "EMUS"
+  ],
+  "orbit": "High elliptical 20,000 x 43,000 km",
+  "src": "EMM Science Data Center",
+  "url": "https://sdc.emiratesmarsmission.ae/"
+ },
+ {
+  "id": "tianwen1-orbiter",
+  "name": "Tianwen-1 Orbiter",
+  "agency": "CNSA",
+  "arrival_year": 2021,
+  "status": "active",
+  "instruments": [
+   "HiRIC",
+   "MoRIC",
+   "MOSIR",
+   "MINPA"
+  ],
+  "orbit": "Elliptical remote-sensing polar orbit",
+  "src": "CNSA Lunar & Planetary Data Release System",
+  "url": "https://clpds.bao.ac.cn/"
+ }
+]

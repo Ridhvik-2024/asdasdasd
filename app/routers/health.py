@@ -1,12 +1,15 @@
 """Health and platform status."""
+from pathlib import Path
 import time
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
+from fastapi.responses import FileResponse
 
 from .. import config, db
 
 router = APIRouter(tags=["health"])
 _STARTED = time.time()
+_CLIENT_INDEX = config.ROOT / "client" / "dist" / "index.html"
 
 
 @router.get("/health")
@@ -35,11 +38,14 @@ def health():
 
 
 @router.get("/")
-def root():
+def root(request: Request):
+    accept = (request.headers.get("accept") or "").lower()
+    if "text/html" in accept and _CLIENT_INDEX.exists():
+        return FileResponse(_CLIENT_INDEX)
     return {
-        "name": "NAM v2 backend",
+        "name": "NAM v2 - Navigation Assistant of Mars (Google Earth for Mars)",
         "docs": "/docs",
         "openapi": "/openapi.json (OpenAPI 3.1)",
         "health": "/health",
-        "note": "backend-only deliverable; client consumes these endpoints + SSE/WS channels",
+        "client": "client/ (React + TypeScript + Vite + Three.js)",
     }
